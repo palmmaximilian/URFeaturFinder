@@ -169,21 +169,21 @@ public class ProbeFeatureClass {
     ZDirection = generateDirectionString(direction);
     ZDirectionIndex = direction;
     ZWrench = generateWrenchString(direction, ZProbeForce);
-    System.out.println("setZDirection: " + ZDirection + " index: " + ZDirectionIndex);
+    // System.out.println("setZDirection: " + ZDirection + " index: " + ZDirectionIndex);
   }
 
   public void setXDirection(int direction) {
     XDirection = generateDirectionString(direction);
     XDirectionIndex = direction;
     XWrench = generateWrenchString(direction, XProbeForce);
-    System.out.println("setXDirection: " + XDirection + " index: " + XDirectionIndex);
+    // System.out.println("setXDirection: " + XDirection + " index: " + XDirectionIndex);
   }
 
   public void setYDirection(int direction) {
     YDirection = generateDirectionString(direction);
     YDirectionIndex = direction;
     YWrench = generateWrenchString(direction, YProbeForce);
-    System.out.println("setYDirection: " + YDirection + " index: " + YDirectionIndex);
+    // System.out.println("setYDirection: " + YDirection + " index: " + YDirectionIndex);
   }
 
   public String getZDirection() {

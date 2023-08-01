@@ -1,4 +1,4 @@
-package ank.featurefinder.impl.setPose;
+package ank.featurefinder.impl.probeFeature;
 
 import com.ur.urcap.api.contribution.ViewAPIProvider;
 import com.ur.urcap.api.contribution.program.ContributionConfiguration;
@@ -10,7 +10,7 @@ import com.ur.urcap.api.domain.data.DataModel;
 import java.util.Locale;
 
 
-public class SetPoseProgramNodeService implements SwingProgramNodeService<SetPoseProgramNodeContribution, SetPoseProgramNodeView> {
+public class ProbeFeatureProgramNodeService implements SwingProgramNodeService<ProbeFeatureProgramNodeContribution, ProbeFeatureProgramNodeView> {
 
 	@Override
 	public String getId() {
@@ -24,20 +24,20 @@ public class SetPoseProgramNodeService implements SwingProgramNodeService<SetPos
 
 	@Override
 	public String getTitle(Locale locale) {
-		return "Set Feature";
+		return "Probe Feature";
 	}
 
 	@Override
-	public SetPoseProgramNodeView createView(ViewAPIProvider apiProvider) {
-		return new SetPoseProgramNodeView();
+	public ProbeFeatureProgramNodeView createView(ViewAPIProvider apiProvider) {
+		return new ProbeFeatureProgramNodeView();
 	}
 
 	@Override
-	public SetPoseProgramNodeContribution createNode(
+	public ProbeFeatureProgramNodeContribution createNode(
 			ProgramAPIProvider apiProvider,
-			SetPoseProgramNodeView view,
+			ProbeFeatureProgramNodeView view,
 			DataModel model,
 			CreationContext context) {
-		return new SetPoseProgramNodeContribution(apiProvider, view);
+		return new ProbeFeatureProgramNodeContribution(apiProvider, view, model);
 	}
 }

@@ -1,38 +1,40 @@
-package ank.featurefinder.impl.setPose;
+package ank.featurefinder.impl.probeFeature;
 
 import com.ur.urcap.api.contribution.ContributionProvider;
 import com.ur.urcap.api.contribution.program.swing.SwingProgramNodeView;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-// import com.ur.urcap.api.domain.variable.Variable;
 
 import javax.swing.*;
 
-public class SetPoseProgramNodeView
-  implements SwingProgramNodeView<SetPoseProgramNodeContribution> {
+public class ProbeFeatureProgramNodeView implements SwingProgramNodeView<ProbeFeatureProgramNodeContribution> {
 
   private JComboBox<String> features = new JComboBox<String>();
-  private JComboBox<String> variables = new JComboBox<String>();
 
   @Override
-  public void buildUI(
-    JPanel jPanel,
-    final ContributionProvider<SetPoseProgramNodeContribution> contributionProvider
-  ) {
+  public void buildUI(JPanel jPanel, final ContributionProvider<ProbeFeatureProgramNodeContribution> contributionProvider) {
     jPanel.setLayout(new BoxLayout(jPanel, BoxLayout.Y_AXIS));
     Box content = Box.createHorizontalBox();
     content.setPreferredSize(new Dimension(550, 50));
     content.setMaximumSize(content.getPreferredSize());
     content.setAlignmentX(Component.LEFT_ALIGNMENT);
     content.setAlignmentY(Component.TOP_ALIGNMENT);
+    features.addActionListener(
+      new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+          try {
+            contributionProvider.get().actionPerformed(e);
+          } catch (Exception ex) {
+            System.out.println("Exception: " + ex);
+          }
+        }
+      }
+    );
     features.setPreferredSize(new Dimension(250, 50));
     features.setMaximumSize(features.getPreferredSize());
-    variables.setPreferredSize(new Dimension(250, 50));
-    variables.setMaximumSize(variables.getPreferredSize());
     content.add(features);
-    content.add(Box.createRigidArea(new Dimension(40, 50)));
-    content.add(variables);
     jPanel.add(content);
   }
 
@@ -46,21 +48,19 @@ public class SetPoseProgramNodeView
     }
   }
 
-  public void updateVariableList(String[] list) {
-    variables.removeAllItems();
-    if (list == null) {
-      return;
-    }
-    for (int i = 0; i < list.length; i++) {
-      variables.addItem(list[i]);
-    }
-  }
-
   public String getFeatureName() {
     return (String) features.getSelectedItem();
   }
 
-  public String getVariableName() {
-	return (String) variables.getSelectedItem();
+  public int getFeatureIndex() {
+    return features.getSelectedIndex();
+  }
+
+  public void setFeatureIndex(int index) {
+    if (index < features.getItemCount()) {
+      features.setSelectedIndex(index);
+    } else if(features.getItemCount() > 0){
+      features.setSelectedIndex(0);
+    }
   }
 }

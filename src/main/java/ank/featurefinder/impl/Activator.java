@@ -6,9 +6,7 @@ import org.osgi.framework.BundleContext;
 import com.ur.urcap.api.contribution.installation.swing.SwingInstallationNodeService;
 import com.ur.urcap.api.contribution.program.swing.SwingProgramNodeService;
 import ank.featurefinder.impl.installation.FeatureFinderInstallationNodeService;
-import ank.featurefinder.impl.setPose.SetPoseProgramNodeService;
-import ank.featurefinder.impl.setZ.SetZProgramNodeService;
-import ank.featurefinder.impl.probeNode.ProbeNodeProgramNodeService;
+import ank.featurefinder.impl.probeFeature.ProbeFeatureProgramNodeService;
 /**
  * Hello world activator for the OSGi bundle URCAPS contribution
  *
@@ -19,9 +17,7 @@ public class Activator implements BundleActivator {
 
 		System.out.println("Activator says Hello World!");
 		bundleContext.registerService(SwingInstallationNodeService.class, new FeatureFinderInstallationNodeService(), null);
-		bundleContext.registerService(SwingProgramNodeService.class, new SetPoseProgramNodeService(), null);
-		bundleContext.registerService(SwingProgramNodeService.class, new SetZProgramNodeService(), null);
-		bundleContext.registerService(SwingProgramNodeService.class, new ProbeNodeProgramNodeService(), null);
+		bundleContext.registerService(SwingProgramNodeService.class, new ProbeFeatureProgramNodeService(), null);
 
 	}
 

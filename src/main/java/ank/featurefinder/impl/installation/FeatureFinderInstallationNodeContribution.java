@@ -97,29 +97,29 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
       } else if (name.equals("deleteButton")) {
         deleteButton();
       } else if (name.equals("ZUpButton")) {
-        System.out.println("ZUpButton pressed");
+        // System.out.println("ZUpButton pressed");
         updatePose(0);
       } else if (name.equals("XUpButton")) {
-        System.out.println("XUpButton pressed");
+        // System.out.println("XUpButton pressed");
         updatePose(1);
       } else if (name.equals("XDownButton")) {
-        System.out.println("XUpButton pressed");
+        // System.out.println("XUpButton pressed");
         updatePose(2);
       } else if (name.equals("Y1UpButton")) {
-        System.out.println("Y1UpButton pressed");
+        // System.out.println("Y1UpButton pressed");
         updatePose(3);
       } else if (name.equals("Y1DownButton")) {
-        System.out.println("Y1DownButton pressed");
+        // System.out.println("Y1DownButton pressed");
         updatePose(4);
       } else if (name.equals("Y2UpButton")) {
-        System.out.println("Y2UpButton pressed");
+        // System.out.println("Y2UpButton pressed");
         updatePose(5);
       } else if (name.equals("Y2DownButton")) {
-        System.out.println("Y2DownButton pressed");
+        // System.out.println("Y2DownButton pressed");
         updatePose(6);
       } else if (name.equals("ProbeFeatureButton")) {
         ProbeFeature();
-        System.out.println("ProbeFeatureButton pressed");
+        // System.out.println("ProbeFeatureButton pressed");
       }
     } else if (e.getSource() instanceof JComboBox) {
       JComboBox<?> box = (JComboBox<?>) e.getSource();
@@ -174,9 +174,9 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     model.set("ProbeFeatureList", newProbeFeatureList);
     view.updateProbeFeatureLables(currentProbeFeature);
 
-    System.out.println(currentProbeFeature.generateXForceCommand());
-    System.out.println(currentProbeFeature.generateYForceCommand());
-    System.out.println(currentProbeFeature.generateZForceCommand());
+    // System.out.println(currentProbeFeature.generateXForceCommand());
+    // System.out.println(currentProbeFeature.generateYForceCommand());
+    // System.out.println(currentProbeFeature.generateZForceCommand());
   }
 
   private void updatePose(final int id) {
@@ -233,7 +233,7 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
             }
             model.set("ProbeFeatureList", newProbeFeatureList);
             view.updateProbeFeatureLables(currentProbeFeature);
-            System.out.println(newProbeFeatureList.toString());
+            // System.out.println(newProbeFeatureList.toString());
           }
         }
       );
@@ -544,10 +544,17 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     double x0 = (bX - bY) / (mY - mX);
     double y0 = mY * x0 + bY;
     double z0 = ZProbePoint[2];
-    double rz = Math.atan(mY/ mX);
-
+    double rz = Math.atan(mY/ 1);
 
     Pose origin = poseFactory.createPose(x0, y0, z0, 0, 0, rz, Length.Unit.M, Angle.Unit.RAD);
     return origin;
+  }
+  public ProbeFeatureClass getProbeFeatureObject(int index) {
+    // get the selected feature
+    final int selectedFeature = index;
+    final String[] ProbeFeatureList = model.get("ProbeFeatureList", (String[]) null);
+
+    final ProbeFeatureClass probeFeatureObject = new ProbeFeatureClass(ProbeFeatureList[selectedFeature]);
+    return probeFeatureObject;
   }
 }

@@ -3,7 +3,7 @@ package ank.featurefinder.impl.communicator;
 import java.util.List;
 
 import com.ur.urcap.api.domain.value.Pose;
-import com.ur.urcap.api.domain.value.PoseFactory;
+// import com.ur.urcap.api.domain.value.PoseFactory;
 
 public class ScriptProxy extends ScriptExporter{
 	ScriptTypeConverter type;
