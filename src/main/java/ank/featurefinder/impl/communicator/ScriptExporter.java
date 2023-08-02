@@ -114,7 +114,6 @@ public class ScriptExporter {
 			sender.sendScriptCommand(commandWithReturn);
 			
 			Socket returnSocket = server.accept();
-			
 			BufferedReader readerFromURScript = new BufferedReader(new InputStreamReader(returnSocket.getInputStream()));
 			input = readerFromURScript.readLine();
 			

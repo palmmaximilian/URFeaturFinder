@@ -56,10 +56,10 @@ public class ProbeFeatureClass {
     ZWrench = generateWrenchString(ZDirectionIndex, ZProbeForce);
     XWrench = generateWrenchString(XDirectionIndex, XProbeForce);
     YWrench = generateWrenchString(YDirectionIndex, YProbeForce);
-    
   }
 
   ProbeFeatureClass(String initString) {
+    
     // initString looks like[ZupPose/XupPose/XdownPose/Y1upPose/Y1downPose/Y2upPose/Y2downPose/ZDirection/XDirection/YDirection]
     String[] initArray = initString.split("/");
     ZUpPose = initArray[0];
@@ -85,8 +85,6 @@ public class ProbeFeatureClass {
     ZWrench = generateWrenchString(ZDirectionIndex, ZProbeForce);
     XWrench = generateWrenchString(XDirectionIndex, XProbeForce);
     YWrench = generateWrenchString(YDirectionIndex, YProbeForce);
-
-   
 
     ProbeSpeed = 0.02;
   }
@@ -222,26 +220,22 @@ public class ProbeFeatureClass {
     return YWrench;
   }
 
-  private String generateLimitString(double speed)
-  {
-    return "["+String.valueOf(speed)+","+String.valueOf(speed)+","+String.valueOf(speed)+",0.341,0.341,0.341]";
+  private String generateLimitString(double speed) {
+    return "[" + String.valueOf(speed) + "," + String.valueOf(speed) + "," + String.valueOf(speed) + ",0.341,0.341,0.341]";
   }
 
-  public String generateZForceCommand()
-  {
-    String command = "force_mode(p[0,0,0,0,0,0],"+ZDirection+","+ZWrench+",2,"+generateLimitString(ProbeSpeed)+")\n";
-    return command;
-  }
-  
-  public String generateXForceCommand()
-  {
-    String command = "force_mode(p[0,0,0,0,0,0],"+XDirection+","+XWrench+",2,"+generateLimitString(ProbeSpeed)+")\n";
+  public String generateZForceCommand() {
+    String command = "force_mode(p[0,0,0,0,0,0]," + ZDirection + "," + ZWrench + ",2," + generateLimitString(ProbeSpeed) + ")\n";
     return command;
   }
 
-  public String generateYForceCommand()
-  {
-    String command = "force_mode(p[0,0,0,0,0,0],"+YDirection+","+YWrench+",2,"+generateLimitString(ProbeSpeed)+")\n";
+  public String generateXForceCommand() {
+    String command = "force_mode(p[0,0,0,0,0,0]," + XDirection + "," + XWrench + ",2," + generateLimitString(ProbeSpeed) + ")\n";
+    return command;
+  }
+
+  public String generateYForceCommand() {
+    String command = "force_mode(p[0,0,0,0,0,0]," + YDirection + "," + YWrench + ",2," + generateLimitString(ProbeSpeed) + ")\n";
     return command;
   }
 

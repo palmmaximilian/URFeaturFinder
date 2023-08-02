@@ -10,19 +10,11 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-public class FeatureFinderInstallationNodeView
-  implements
-    SwingInstallationNodeView<FeatureFinderInstallationNodeContribution> {
+public class FeatureFinderInstallationNodeView implements SwingInstallationNodeView<FeatureFinderInstallationNodeContribution> {
 
   private static final Dimension BUTTON_DIMENSION = new Dimension(200, 30);
-  private static final Dimension DIRECTION_DROPDOWN_DIMENSION = new Dimension(
-    100,
-    30
-  );
-  private static final Dimension PROBE_FEATURE_BUTTON_DIMENSION = new Dimension(
-    200,
-    60
-  );
+  private static final Dimension DIRECTION_DROPDOWN_DIMENSION = new Dimension(100, 30);
+  private static final Dimension PROBE_FEATURE_BUTTON_DIMENSION = new Dimension(200, 60);
   private JButton createFeatureButton;
   private JButton deleteFeatureButton;
   public JButton renameFeatureButton;
@@ -51,16 +43,11 @@ public class FeatureFinderInstallationNodeView
   private JLabel Y2DownLabel = new JLabel("");
 
   private String[] DirectionList = { "X+", "X-", "Y+", "Y-", "Z+", "Z-" };
-  private JComboBox<String> ZDirectionBox = new JComboBox<String>(
-    DirectionList
-  );
-  private JComboBox<String> XDirectionBox = new JComboBox<String>(
-    DirectionList
-  );
-  private JComboBox<String> YDirectionBox = new JComboBox<String>(
-    DirectionList
-  );
+  private JComboBox<String> ZDirectionBox = new JComboBox<String>(DirectionList);
+  private JComboBox<String> XDirectionBox = new JComboBox<String>(DirectionList);
+  private JComboBox<String> YDirectionBox = new JComboBox<String>(DirectionList);
 
+  private String image_path = ("/Diagram/ProbeDiagram.png");
   FeatureFinderInstallationNodeContribution contribution;
 
   private ActionListener generalActionListener = new ActionListener() {
@@ -75,10 +62,7 @@ public class FeatureFinderInstallationNodeView
   };
 
   @Override
-  public void buildUI(
-    JPanel panel,
-    final FeatureFinderInstallationNodeContribution contribution
-  ) {
+  public void buildUI(JPanel panel, final FeatureFinderInstallationNodeContribution contribution) {
     this.contribution = contribution;
     panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
     defaultBox.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -87,6 +71,7 @@ public class FeatureFinderInstallationNodeView
     panel.add(defaultBox);
     panel.add(createPoseBox(contribution));
     panel.add(Box.createRigidArea(new Dimension(0, 10)));
+
     panel.add(ProbeFeatureButton);
     ProbeFeatureButton.setName("ProbeFeatureButton");
     ProbeFeatureButton.setPreferredSize(PROBE_FEATURE_BUTTON_DIMENSION);
@@ -97,29 +82,36 @@ public class FeatureFinderInstallationNodeView
     renameTextField.setMaximumSize(renameTextField.getPreferredSize());
   }
 
-  Box defaultViewBox(
-    final FeatureFinderInstallationNodeContribution contribution
-  ) {
+  Box defaultViewBox(final FeatureFinderInstallationNodeContribution contribution) {
     Box containerbox = Box.createVerticalBox();
     containerbox.setAlignmentX(Component.LEFT_ALIGNMENT);
     containerbox.setAlignmentY(Component.TOP_ALIGNMENT);
     Box content = Box.createVerticalBox();
     content.setAlignmentX(Component.LEFT_ALIGNMENT);
     content.setAlignmentY(Component.TOP_ALIGNMENT);
+
+
+    Box upperBox = Box.createHorizontalBox();
+    upperBox.setAlignmentX(Component.LEFT_ALIGNMENT);
+    upperBox.setAlignmentY(Component.TOP_ALIGNMENT);
+
+    upperBox.add(createfeatureBox(contribution));
+    upperBox.add(Box.createRigidArea(new Dimension(10, 0)));
+    // insert an image
+    ImageIcon image = new ImageIcon(getClass().getResource(image_path));
+    JLabel imagelLabel = new JLabel(image);
+    imagelLabel.setMaximumSize(new Dimension(500, 200));
+    upperBox.add(imagelLabel);
+
+    // containerbox.add(upperBox);
     containerbox.add(createfeatureBox(contribution));
     containerbox.add(createButtons(contribution));
-    containerbox.add(
-      new JLabel(
-        "Names must follow the following convention: [a-zA-Z][a-zA-Z0-9_]{0,14}"
-      )
-    );
+    containerbox.add(new JLabel("Names must follow the following convention: [a-zA-Z][a-zA-Z0-9_]{0,14}"));
 
     return containerbox;
   }
 
-  private Box createPoseBox(
-    final FeatureFinderInstallationNodeContribution contribution
-  ) {
+  private Box createPoseBox(final FeatureFinderInstallationNodeContribution contribution) {
     buttonBox = Box.createVerticalBox();
     buttonBox.setAlignmentX(Component.LEFT_ALIGNMENT);
     buttonBox.setAlignmentY(Component.TOP_ALIGNMENT);
@@ -259,9 +251,7 @@ public class FeatureFinderInstallationNodeView
     return buttonBox;
   }
 
-  private Box createfeatureBox(
-    final FeatureFinderInstallationNodeContribution contribution
-  ) {
+  private Box createfeatureBox(final FeatureFinderInstallationNodeContribution contribution) {
     Box featureBox = Box.createVerticalBox();
     featureBox.setAlignmentX(Component.LEFT_ALIGNMENT);
     featureBox.setAlignmentY(Component.TOP_ALIGNMENT);
@@ -285,9 +275,7 @@ public class FeatureFinderInstallationNodeView
     return featureBox;
   }
 
-  Box createButtons(
-    final FeatureFinderInstallationNodeContribution contribution
-  ) {
+  Box createButtons(final FeatureFinderInstallationNodeContribution contribution) {
     Box buttonBox = Box.createHorizontalBox();
     buttonBox.setAlignmentX(Component.LEFT_ALIGNMENT);
     buttonBox.setAlignmentY(Component.TOP_ALIGNMENT);
@@ -310,13 +298,8 @@ public class FeatureFinderInstallationNodeView
         public void actionPerformed(ActionEvent e) {
           try {
             String defaultName = featureFrame.getSelectedValue();
-            KeyboardTextInput keyboardInput = contribution.getKeyboard(
-              defaultName
-            );
-            keyboardInput.show(
-              renameTextField,
-              contribution.getCallbackForKeyboard()
-            );
+            KeyboardTextInput keyboardInput = contribution.getKeyboard(defaultName);
+            keyboardInput.show(renameTextField, contribution.getCallbackForKeyboard());
             // renameTextField.setVisible(false);
 
           } catch (Exception ex) {
@@ -417,24 +400,7 @@ public class FeatureFinderInstallationNodeView
   private String shortenPose(String poseString) {
     // truncate each value to 4 decimal places
     String[] PoseArray = poseString.split(",");
-    String returnPose =
-      "p" +
-      "[" +
-      String.format("%.4f", Double.parseDouble(PoseArray[0].substring(2))) +
-      "," +
-      String.format("%.4f", Double.parseDouble(PoseArray[1])) +
-      "," +
-      String.format("%.4f", Double.parseDouble(PoseArray[2])) +
-      "," +
-      String.format("%.4f", Double.parseDouble(PoseArray[3])) +
-      "," +
-      String.format("%.4f", Double.parseDouble(PoseArray[4])) +
-      "," +
-      String.format(
-        "%.4f",
-        Double.parseDouble(PoseArray[5].substring(0, PoseArray[5].length() - 1))
-      ) +
-      "]";
+    String returnPose = "p" + "[" + String.format("%.4f", Double.parseDouble(PoseArray[0].substring(2))) + "," + String.format("%.4f", Double.parseDouble(PoseArray[1])) + "," + String.format("%.4f", Double.parseDouble(PoseArray[2])) + "," + String.format("%.4f", Double.parseDouble(PoseArray[3])) + "," + String.format("%.4f", Double.parseDouble(PoseArray[4])) + "," + String.format("%.4f", Double.parseDouble(PoseArray[5].substring(0, PoseArray[5].length() - 1))) + "]";
     return returnPose;
   }
 
@@ -450,6 +416,5 @@ public class FeatureFinderInstallationNodeView
     ZDirectionBox.setSelectedIndex(ProbeFeature.getZDirectionIndex());
     XDirectionBox.setSelectedIndex(ProbeFeature.getXDirectionIndex());
     YDirectionBox.setSelectedIndex(ProbeFeature.getYDirectionIndex());
-
   }
 }
