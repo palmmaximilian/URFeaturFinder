@@ -1,5 +1,6 @@
 package ank.featurefinder.impl.installation;
 
+import ank.featurefinder.impl.ProbeFeatureClass;
 import ank.featurefinder.impl.communicator.ScriptCommand;
 import ank.featurefinder.impl.communicator.ScriptExporter;
 import com.ur.urcap.api.contribution.InstallationNodeContribution;
@@ -7,6 +8,7 @@ import com.ur.urcap.api.contribution.installation.InstallationAPIProvider;
 import com.ur.urcap.api.domain.UserInterfaceAPI;
 import com.ur.urcap.api.domain.data.DataModel;
 import com.ur.urcap.api.domain.feature.FeatureContributionModel;
+import com.ur.urcap.api.domain.function.FunctionModel;
 import com.ur.urcap.api.domain.script.ScriptWriter;
 import com.ur.urcap.api.domain.userinteraction.RobotPositionCallback2;
 import com.ur.urcap.api.domain.userinteraction.inputvalidation.InputValidationFactory;
@@ -20,6 +22,7 @@ import com.ur.urcap.api.domain.value.simple.Angle;
 import com.ur.urcap.api.domain.value.simple.Length;
 import java.awt.event.ActionEvent;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.event.ListSelectionEvent;
 
@@ -34,6 +37,7 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
   private PoseFactory poseFactory;
   private Pose zeroPose;
   private UserInterfaceAPI uiapi;
+  private FunctionModel functionModel;
 
   FeatureFinderInstallationNodeContribution(InstallationAPIProvider apiProvider, DataModel model, FeatureFinderInstallationNodeView view) {
     this.uiapi = apiProvider.getUserInterfaceAPI();
@@ -44,6 +48,14 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     featureContributionModel = apiProvider.getInstallationAPI().getFeatureContributionModel();
 
     this.poseFactory = apiProvider.getInstallationAPI().getValueFactoryProvider().getPoseFactory();
+    this.functionModel = apiProvider.getInstallationAPI().getFunctionModel();
+
+    try {
+      functionModel.addFunction("CalculateOrigin","ZProbePoint","XProbePoint","Y1ProbePoint","Y2ProbePoint");
+    } catch (Exception e) {
+      System.out.println("Function did not get added: " + e);
+      return;
+    }
   }
 
   @Override
@@ -65,7 +77,21 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
   }
 
   @Override
-  public void generateScript(ScriptWriter writer) {}
+  public void generateScript(ScriptWriter writer) {
+    // add a function
+
+    writer.appendLine("def CalculateOrigin(ZProbePoint,XProbePoint,Y1ProbePoint,Y2ProbePoint):");
+    writer.appendLine(" mY = (Y2ProbePoint[1] - Y1ProbePoint[1]) / (Y2ProbePoint[0] - Y1ProbePoint[0])");
+    writer.appendLine(" mX = -(1 / mY)");
+    writer.appendLine(" bX = XProbePoint[1] - (mX * XProbePoint[0])");
+    writer.appendLine(" bY = Y1ProbePoint[1] - (mY * Y1ProbePoint[0])");
+    writer.appendLine(" x0 = (bX - bY) / (mY - mX)");
+    writer.appendLine(" y0 = mY * x0 + bY");
+    writer.appendLine(" z0 = ZProbePoint[2]");
+    writer.appendLine(" rz = atan(mY/1)");
+    writer.appendLine(" return (p[x0, y0, z0, 0, 0, rz])");
+    writer.appendLine("end");
+  }
 
   void listItemClicked(ListSelectionEvent e) {
     int index = view.featureFrame.getSelectedIndex();
@@ -133,7 +159,39 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
         // System.out.println("YDirection changed");
         updateDirection(2, box.getSelectedIndex());
       }
+    } else if (e.getSource() instanceof JCheckBox) {
+      JCheckBox box = (JCheckBox) e.getSource();
+      String name = box.getName();
+      if (name.equals("DoubleProbeBox")) {
+        // System.out.println("doubleProbeBox changed");
+        updateDoubleProbe(box.isSelected());
+      }
     }
+  }
+
+  private void updateDoubleProbe(boolean selected) {
+    final String[] ProbeFeatureList = model.get("ProbeFeatureList", (String[]) null);
+    if (ProbeFeatureList == null) {
+      System.out.println("ProbeFeatureList is still empty, something went wrong");
+      return;
+    }
+
+    // get the selected feature
+    final int selectedFeature = view.getFeatureListIndex();
+
+    final ProbeFeatureClass currentProbeFeature = new ProbeFeatureClass(ProbeFeatureList[selectedFeature]);
+    currentProbeFeature.setDoubleProbe(selected);
+
+    String[] newProbeFeatureList = new String[ProbeFeatureList.length];
+    for (int i = 0; i < ProbeFeatureList.length; i++) {
+      if (i != selectedFeature) {
+        newProbeFeatureList[i] = ProbeFeatureList[i];
+      } else {
+        newProbeFeatureList[i] = currentProbeFeature.toString();
+      }
+    }
+    model.set("ProbeFeatureList", newProbeFeatureList);
+    view.updateProbeFeatureLables(currentProbeFeature);
   }
 
   private void updateDirection(final int id, int index) {
@@ -507,7 +565,7 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
 
     // convert Pose_list to List
     String[] Pose_list_array = Pose_list.split(";");
-    if(Pose_list_array.length != 4){
+    if (Pose_list_array.length != 4) {
       System.out.println("Error: Pose_list_array.length != 4");
       return;
     }
@@ -516,7 +574,6 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     // }
     Pose origin = calculateFeatureOrigin(Pose_list_array);
     // System.out.println(origin.toString());
-
 
     try {
       String featurename = view.getFeatureListValue();
@@ -576,7 +633,6 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     // System.out.println("y0: " + y0);
     // System.out.println("z0: " + z0);
     // System.out.println("rz: " + rz);
-
 
     Pose origin = poseFactory.createPose(x0, y0, z0, 0, 0, rz, Length.Unit.M, Angle.Unit.RAD);
     return origin;

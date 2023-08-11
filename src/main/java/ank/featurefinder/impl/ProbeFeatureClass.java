@@ -1,4 +1,4 @@
-package ank.featurefinder.impl.installation;
+package ank.featurefinder.impl;
 
 import com.ur.urcap.api.domain.value.Pose;
 
@@ -16,21 +16,26 @@ public class ProbeFeatureClass {
   private String XDirection;
   private String YDirection;
 
+
   private int ZDirectionIndex;
   private int XDirectionIndex;
   private int YDirectionIndex;
 
-  private int ZProbeForce;
-  private int XProbeForce;
-  private int YProbeForce;
 
   private String ZWrench;
   private String XWrench;
   private String YWrench;
 
+  private int ProbeForce;
+
   private double ProbeSpeed;
 
-  ProbeFeatureClass() {
+  private double RapidSpeed;
+  private double RapidAcceleration;
+
+  private boolean doubleProbe;
+
+  public ProbeFeatureClass() {
     ZUpPose = "p[0,0,0,0,0,0]";
     XUpPose = "p[0,0,0,0,0,0]";
     XDownPose = "p[0,0,0,0,0,0]";
@@ -47,20 +52,23 @@ public class ProbeFeatureClass {
     XDirectionIndex = 3;
     YDirectionIndex = 0;
 
-    ZProbeForce = 8;
-    XProbeForce = 8;
-    YProbeForce = 8;
 
-    ProbeSpeed = 0.02;
+    ProbeForce = 8;
 
-    ZWrench = generateWrenchString(ZDirectionIndex, ZProbeForce);
-    XWrench = generateWrenchString(XDirectionIndex, XProbeForce);
-    YWrench = generateWrenchString(YDirectionIndex, YProbeForce);
+    ProbeSpeed = 20;
+
+    RapidSpeed = 1000;
+    RapidAcceleration = 800;
+
+    doubleProbe = false;
+
+    ZWrench = generateWrenchString(ZDirectionIndex, ProbeForce);
+    XWrench = generateWrenchString(XDirectionIndex, ProbeForce);
+    YWrench = generateWrenchString(YDirectionIndex, ProbeForce);
   }
 
-  ProbeFeatureClass(String initString) {
-    
-    // initString looks like[ZupPose/XupPose/XdownPose/Y1upPose/Y1downPose/Y2upPose/Y2downPose/ZDirection/XDirection/YDirection]
+  public ProbeFeatureClass(String initString) {
+    // initString looks like[ZupPose/XupPose/XdownPose/Y1upPose/Y1downPose/Y2upPose/Y2downPose/ZDirection/XDirection/YDirection/ProbeForce/ProbeSpeed/RapidSpeed/RapidAcceleration/DoubleProbe]
     String[] initArray = initString.split("/");
     ZUpPose = initArray[0];
     XUpPose = initArray[1];
@@ -78,15 +86,18 @@ public class ProbeFeatureClass {
     XDirection = generateDirectionString(XDirectionIndex);
     YDirection = generateDirectionString(YDirectionIndex);
 
-    ZProbeForce = 8;
-    XProbeForce = 8;
-    YProbeForce = 8;
+    ZWrench = generateWrenchString(ZDirectionIndex, ProbeForce);
+    XWrench = generateWrenchString(XDirectionIndex, ProbeForce);
+    YWrench = generateWrenchString(YDirectionIndex, ProbeForce);
 
-    ZWrench = generateWrenchString(ZDirectionIndex, ZProbeForce);
-    XWrench = generateWrenchString(XDirectionIndex, XProbeForce);
-    YWrench = generateWrenchString(YDirectionIndex, YProbeForce);
+    ProbeForce = Integer.parseInt(initArray[10]);
+    ProbeSpeed = Double.parseDouble(initArray[11]);
 
-    ProbeSpeed = 0.02;
+    RapidSpeed = Double.parseDouble(initArray[12]);
+    RapidAcceleration = Double.parseDouble(initArray[13]);
+  
+    doubleProbe = Boolean.parseBoolean(initArray[14]);
+
   }
 
   public void setZUpPose(Pose pose) {
@@ -166,21 +177,21 @@ public class ProbeFeatureClass {
   public void setZDirection(int direction) {
     ZDirection = generateDirectionString(direction);
     ZDirectionIndex = direction;
-    ZWrench = generateWrenchString(direction, ZProbeForce);
+    ZWrench = generateWrenchString(direction, ProbeForce);
     // System.out.println("setZDirection: " + ZDirection + " index: " + ZDirectionIndex);
   }
 
   public void setXDirection(int direction) {
     XDirection = generateDirectionString(direction);
     XDirectionIndex = direction;
-    XWrench = generateWrenchString(direction, XProbeForce);
+    XWrench = generateWrenchString(direction, ProbeForce);
     // System.out.println("setXDirection: " + XDirection + " index: " + XDirectionIndex);
   }
 
   public void setYDirection(int direction) {
     YDirection = generateDirectionString(direction);
     YDirectionIndex = direction;
-    YWrench = generateWrenchString(direction, YProbeForce);
+    YWrench = generateWrenchString(direction, ProbeForce);
     // System.out.println("setYDirection: " + YDirection + " index: " + YDirectionIndex);
   }
 
@@ -220,6 +231,49 @@ public class ProbeFeatureClass {
     return YWrench;
   }
 
+  public void setProbeForce(int force) {
+    ProbeForce = force;
+    ZWrench = generateWrenchString(ZDirectionIndex, ProbeForce);
+    XWrench = generateWrenchString(XDirectionIndex, ProbeForce);
+    YWrench = generateWrenchString(YDirectionIndex, ProbeForce);
+  }
+
+  public int getProbeForce() {
+    return ProbeForce;
+  }
+
+  public void setProbeSpeed(double speed) {
+    ProbeSpeed = speed;
+  }
+
+  public double getProbeSpeed() {
+    return ProbeSpeed;
+  }
+
+  public void setRapidSpeed(double speed) {
+    RapidSpeed = speed;
+  }
+
+  public double getRapidSpeed() {
+    return RapidSpeed;
+  }
+
+  public void setRapidAcceleration(double acceleration) {
+    RapidAcceleration = acceleration;
+  }
+
+  public double getRapidAcceleration() {
+    return RapidAcceleration;
+  }
+
+  public void setDoubleProbe(boolean doubleProbe) {
+    this.doubleProbe = doubleProbe;
+  }
+
+  public boolean getDoubleProbe() {
+    return doubleProbe;
+  }
+
   private String generateLimitString(double speed) {
     return "[" + String.valueOf(speed) + "," + String.valueOf(speed) + "," + String.valueOf(speed) + ",0.341,0.341,0.341]";
   }
@@ -241,7 +295,8 @@ public class ProbeFeatureClass {
 
   @Override
   public String toString() {
-    String[] returnString = { ZUpPose, XUpPose, XDownPose, Y1UpPose, Y1DownPose, Y2UpPose, Y2DownPose, Integer.toString(ZDirectionIndex), Integer.toString(XDirectionIndex), Integer.toString(YDirectionIndex) };
+    String[] returnString = { ZUpPose, XUpPose, XDownPose, Y1UpPose, Y1DownPose, Y2UpPose, Y2DownPose, Integer.toString(ZDirectionIndex), Integer.toString(XDirectionIndex), Integer.toString(YDirectionIndex), Integer.toString(ProbeForce), Double.toString(ProbeSpeed), Double.toString(RapidSpeed), Double.toString(RapidAcceleration), Boolean.toString(doubleProbe) };
+
     return String.join("/", returnString);
   }
 }

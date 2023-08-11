@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Bnd-LastModified: 1690916189139
+Bnd-LastModified: 1691757785869
 Build-Jdk: 11.0.18
 Built-By: root
 Bundle-Activator: ank.featurefinder.impl.Activator
@@ -20,14 +20,15 @@ Import-Package: com.ur.urcap.api.contribution;version="[1.9,2)",com.ur.u
  ibution.program;version="[1.9,2)",com.ur.urcap.api.contribution.program
  .swing;version="[1.8,2)",com.ur.urcap.api.domain;version="[1.10,2)",com
  .ur.urcap.api.domain.data;version="[1.10,2)",com.ur.urcap.api.domain.fe
- ature;version="[1.10,2)",com.ur.urcap.api.domain.script;version="[1.8,2
- )",com.ur.urcap.api.domain.undoredo;version="[1.8,2)",com.ur.urcap.api.
- domain.userinteraction;version="[1.9,2)",com.ur.urcap.api.domain.userin
- teraction.inputvalidation;version="[1.8,2)",com.ur.urcap.api.domain.use
- rinteraction.keyboard;version="[1.8,2)",com.ur.urcap.api.domain.value;v
- ersion="[1.9,2)",com.ur.urcap.api.domain.value.robotposition;version="[
- 1.9,2)",com.ur.urcap.api.domain.value.simple;version="[1.9,2)",javax.sw
- ing,javax.swing.event,org.osgi.framework;version="[1.6,2)"
+ ature;version="[1.10,2)",com.ur.urcap.api.domain.function;version="[1.8
+ ,2)",com.ur.urcap.api.domain.script;version="[1.8,2)",com.ur.urcap.api.
+ domain.undoredo;version="[1.8,2)",com.ur.urcap.api.domain.userinteracti
+ on;version="[1.9,2)",com.ur.urcap.api.domain.userinteraction.inputvalid
+ ation;version="[1.8,2)",com.ur.urcap.api.domain.userinteraction.keyboar
+ d;version="[1.8,2)",com.ur.urcap.api.domain.value;version="[1.9,2)",com
+ .ur.urcap.api.domain.value.robotposition;version="[1.9,2)",com.ur.urcap
+ .api.domain.value.simple;version="[1.9,2)",javax.swing,javax.swing.even
+ t,org.osgi.framework;version="[1.6,2)"
 Tool: Bnd-2.1.0.20130426-122213
 URCapCompatibility-CB3: true
 URCapCompatibility-eSeries: true

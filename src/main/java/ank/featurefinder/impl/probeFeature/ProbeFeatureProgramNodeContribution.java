@@ -1,7 +1,7 @@
 package ank.featurefinder.impl.probeFeature;
 
+import ank.featurefinder.impl.ProbeFeatureClass;
 import ank.featurefinder.impl.installation.FeatureFinderInstallationNodeContribution;
-import ank.featurefinder.impl.installation.ProbeFeatureClass;
 
 import com.ur.urcap.api.contribution.ProgramNodeContribution;
 import com.ur.urcap.api.contribution.program.ProgramAPIProvider;
