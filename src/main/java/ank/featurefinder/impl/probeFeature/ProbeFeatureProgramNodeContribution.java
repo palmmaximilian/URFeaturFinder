@@ -2,7 +2,6 @@ package ank.featurefinder.impl.probeFeature;
 
 import ank.featurefinder.impl.ProbeFeatureClass;
 import ank.featurefinder.impl.installation.FeatureFinderInstallationNodeContribution;
-
 import com.ur.urcap.api.contribution.ProgramNodeContribution;
 import com.ur.urcap.api.contribution.program.ProgramAPIProvider;
 import com.ur.urcap.api.domain.ProgramAPI;
@@ -10,9 +9,7 @@ import com.ur.urcap.api.domain.data.DataModel;
 import com.ur.urcap.api.domain.script.ScriptWriter;
 import com.ur.urcap.api.domain.undoredo.UndoRedoManager;
 import com.ur.urcap.api.domain.undoredo.UndoableChanges;
-
 import java.awt.event.ActionEvent;
-
 
 public class ProbeFeatureProgramNodeContribution implements ProgramNodeContribution {
 
@@ -21,11 +18,7 @@ public class ProbeFeatureProgramNodeContribution implements ProgramNodeContribut
   private UndoRedoManager UndoRedoManager;
   private DataModel model;
 
-  ProbeFeatureProgramNodeContribution(
-    ProgramAPIProvider apiProvider,
-    ProbeFeatureProgramNodeView view,
-    DataModel model
-  ) {
+  ProbeFeatureProgramNodeContribution(ProgramAPIProvider apiProvider, ProbeFeatureProgramNodeView view, DataModel model) {
     programAPI = apiProvider.getProgramAPI();
     this.view = view;
     this.UndoRedoManager = apiProvider.getProgramAPI().getUndoRedoManager();
@@ -56,8 +49,17 @@ public class ProbeFeatureProgramNodeContribution implements ProgramNodeContribut
   @Override
   public boolean isDefined() {
     String featureName = model.get("Feature", "None");
+
     if (featureName.equals("None")) {
       return false;
+    }
+
+    int lastFeature = model.get("lastFeature", 0);
+    if (lastFeature > 0) {
+      ProbeFeatureClass probeFeatureObject = getInstallationNode().getProbeFeatureObject(model.get("lastFeature", 0));
+      if (!probeFeatureObject.isDefined()) {
+        return false;
+      }
     }
     return true;
   }
@@ -69,7 +71,7 @@ public class ProbeFeatureProgramNodeContribution implements ProgramNodeContribut
       return;
     }
     ProbeFeatureClass probeFeatureObject = getInstallationNode().getProbeFeatureObject(model.get("lastFeature", 0));
-   
+
     scriptWriter.appendLine("movej(" + probeFeatureObject.getZUpPoseString() + ")");
     scriptWriter.appendLine("sleep(0.5)");
     scriptWriter.appendLine("starting_pos=get_actual_tcp_pose()");
@@ -136,23 +138,19 @@ public class ProbeFeatureProgramNodeContribution implements ProgramNodeContribut
   }
 
   private FeatureFinderInstallationNodeContribution getInstallationNode() {
-    return programAPI.getInstallationNode(
-      FeatureFinderInstallationNodeContribution.class
-    );
+    return programAPI.getInstallationNode(FeatureFinderInstallationNodeContribution.class);
   }
 
-  public void actionPerformed(ActionEvent e)
-  {
+  public void actionPerformed(ActionEvent e) {
     final String featureName = view.getFeatureName();
     UndoRedoManager.recordChanges(
       new UndoableChanges() {
         @Override
         public void executeChanges() {
-         model.set("Feature", featureName);
-         model.set("lastFeature", view.getFeatureIndex());
+          model.set("Feature", featureName);
+          model.set("lastFeature", view.getFeatureIndex());
         }
       }
     );
-    
   }
 }

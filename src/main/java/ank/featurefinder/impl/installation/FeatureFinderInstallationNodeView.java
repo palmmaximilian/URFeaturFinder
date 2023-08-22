@@ -2,10 +2,14 @@ package ank.featurefinder.impl.installation;
 
 import ank.featurefinder.impl.ProbeFeatureClass;
 import com.ur.urcap.api.contribution.installation.swing.SwingInstallationNodeView;
+import com.ur.urcap.api.domain.userinteraction.keyboard.KeyboardNumberInput;
 import com.ur.urcap.api.domain.userinteraction.keyboard.KeyboardTextInput;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 // import jframe
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -85,7 +89,7 @@ public class FeatureFinderInstallationNodeView implements SwingInstallationNodeV
   public void buildUI(JPanel panel, final FeatureFinderInstallationNodeContribution contribution) {
     this.contribution = contribution;
     panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-    defaultBox= defaultViewBox(contribution);
+    defaultBox = defaultViewBox(contribution);
     panel.add(defaultBox);
   }
 
@@ -173,6 +177,45 @@ public class FeatureFinderInstallationNodeView implements SwingInstallationNodeV
     ProbingSpeed.setName("ProbingSpeed");
     DoubleProbeBox.setName("DoubleProbeBox");
 
+    RapidSpeedField.addMouseListener(
+      new MouseAdapter() {
+        @Override
+        public void mousePressed(MouseEvent e) {
+          System.out.println("RapidSpeedField: " + RapidSpeedField.getText());
+          // get double value from text field
+          Double dValue = Double.parseDouble(RapidSpeedField.getText());
+          Integer value = dValue.intValue();
+          KeyboardNumberInput<Integer> keyboardInput = contribution.getKeyboardNumber(value);
+          keyboardInput.show(RapidSpeedField, contribution.getCallbackForKeyboardNumber(1));
+        }
+      }
+    );
+    RapidAccField.addMouseListener(
+      new MouseAdapter() {
+        @Override
+        public void mousePressed(MouseEvent e) {
+          System.out.println("RapidAccField: " + RapidAccField.getText());
+          Double dValue = Double.parseDouble(RapidSpeedField.getText());
+          Integer value = dValue.intValue();
+          KeyboardNumberInput<Integer> keyboardInput = contribution.getKeyboardNumber(value);
+          keyboardInput.show(RapidAccField, contribution.getCallbackForKeyboardNumber(2));
+        }
+      }
+    );
+    ProbingSpeed.addMouseListener(
+      new MouseAdapter() {
+        @Override
+        public void mousePressed(MouseEvent e) {
+          System.out.println("ProbingSpeed: " + ProbingSpeed.getText());
+          Double dValue = Double.parseDouble(RapidSpeedField.getText());
+          Integer value = dValue.intValue();
+          KeyboardNumberInput<Integer> keyboardInput = contribution.getKeyboardNumber(value);
+          keyboardInput.show(ProbingSpeed, contribution.getCallbackForKeyboardNumber(3));
+        }
+      }
+    );
+    DoubleProbeBox.addActionListener(generalActionListener);
+
     Box speedBox = Box.createVerticalBox();
     speedBox.setAlignmentX(Component.LEFT_ALIGNMENT);
     speedBox.setAlignmentY(Component.TOP_ALIGNMENT);
@@ -189,7 +232,8 @@ public class FeatureFinderInstallationNodeView implements SwingInstallationNodeV
     compartment.add(Box.createRigidArea(SmallHorizontalRigidArea));
     RapidSpeedField.setPreferredSize(SPEED_TEXTFIELD_DIMENSION);
     RapidSpeedField.setMaximumSize(SPEED_TEXTFIELD_DIMENSION);
-    RapidSpeedField.addActionListener(generalActionListener);
+
+    // RapidSpeedField.addActionListener(generalActionListener);
     compartment.add(RapidSpeedField);
     speedBox.add(compartment);
 
@@ -236,7 +280,6 @@ public class FeatureFinderInstallationNodeView implements SwingInstallationNodeV
     compartment.add(DoubleProbeLabel);
     compartment.add(Box.createRigidArea(SmallHorizontalRigidArea));
     compartment.add(DoubleProbeBox);
-    DoubleProbeBox.addActionListener(generalActionListener);
     speedBox.add(compartment);
 
     return speedBox;
@@ -433,6 +476,7 @@ public class FeatureFinderInstallationNodeView implements SwingInstallationNodeV
         }
       }
     );
+    featureFrame.setCellRenderer(new FeatureListRenderer());
     return scrollPane;
   }
 
@@ -618,5 +662,29 @@ public class FeatureFinderInstallationNodeView implements SwingInstallationNodeV
     ProbingSpeed.setText(Double.toString(ProbeFeature.getProbeSpeed()));
 
     DoubleProbeBox.setSelected(ProbeFeature.getDoubleProbe());
+  }
+
+  private class FeatureListRenderer extends DefaultListCellRenderer {
+
+    @Override
+    public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+      Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+
+      // System.out.println("index: " + index);
+      ProbeFeatureClass currentProbeFeature = contribution.getProbeFeatureObject(index);
+      if (currentProbeFeature == null) {
+        return component;
+      }
+      // Set custom background colors based on criteria
+      if (!isSelected) {
+        if (currentProbeFeature.isDefined()) { // Example: every even index has a yellow background
+          component.setBackground(Color.WHITE);
+        } else {
+          component.setBackground(Color.YELLOW);
+        }
+      }
+
+      return component;
+    }
   }
 }

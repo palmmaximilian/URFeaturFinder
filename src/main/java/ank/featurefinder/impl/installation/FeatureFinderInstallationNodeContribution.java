@@ -14,6 +14,7 @@ import com.ur.urcap.api.domain.userinteraction.RobotPositionCallback2;
 import com.ur.urcap.api.domain.userinteraction.inputvalidation.InputValidationFactory;
 import com.ur.urcap.api.domain.userinteraction.keyboard.KeyboardInputCallback;
 import com.ur.urcap.api.domain.userinteraction.keyboard.KeyboardInputFactory;
+import com.ur.urcap.api.domain.userinteraction.keyboard.KeyboardNumberInput;
 import com.ur.urcap.api.domain.userinteraction.keyboard.KeyboardTextInput;
 import com.ur.urcap.api.domain.value.Pose;
 import com.ur.urcap.api.domain.value.PoseFactory;
@@ -29,6 +30,7 @@ import javax.swing.event.ListSelectionEvent;
 public class FeatureFinderInstallationNodeContribution implements InstallationNodeContribution {
 
   private String keyboardString = "";
+  private Integer keyboardInteger = 0;
   private final DataModel model;
   private final FeatureFinderInstallationNodeView view;
   private FeatureContributionModel featureContributionModel;
@@ -51,7 +53,7 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     this.functionModel = apiProvider.getInstallationAPI().getFunctionModel();
 
     try {
-      functionModel.addFunction("CalculateOrigin","ZProbePoint","XProbePoint","Y1ProbePoint","Y2ProbePoint");
+      functionModel.addFunction("CalculateOrigin", "ZProbePoint", "XProbePoint", "Y1ProbePoint", "Y2ProbePoint");
     } catch (Exception e) {
       System.out.println("Function did not get added: " + e);
       return;
@@ -106,7 +108,12 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     if (index != -1) {
       view.enableButtons();
       String[] PoseFeatureList = model.get("ProbeFeatureList", (String[]) null);
-      view.updateProbeFeatureLables(new ProbeFeatureClass(PoseFeatureList[index]));
+      if (PoseFeatureList != null) {
+        // System.out.println("PoseFeatureList: " + PoseFeatureList[index]);
+        // System.out.println("Index: " + index);
+        view.updateProbeFeatureLables(new ProbeFeatureClass(PoseFeatureList[index]));
+      }
+      // view.updateProbeFeatureLables(new ProbeFeatureClass(PoseFeatureList[index]));
     }
   }
 
@@ -295,6 +302,42 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
       );
   }
 
+  private void updateSpeeds(final int id) {
+    final String[] ProbeFeatureList = model.get("ProbeFeatureList", (String[]) null);
+    if (ProbeFeatureList == null) {
+      System.out.println("ProbeFeatureList is still empty, something went wrong");
+      return;
+    }
+
+    // get the selected feature
+    final int selectedFeature = view.getFeatureListIndex();
+
+    ProbeFeatureClass currentProbeFeature = new ProbeFeatureClass(ProbeFeatureList[selectedFeature]);
+    switch (id) {
+      case 1:
+        currentProbeFeature.setRapidSpeed(keyboardInteger);
+        break;
+      case 2:
+        currentProbeFeature.setRapidAcceleration(keyboardInteger);
+        break;
+      case 3:
+        currentProbeFeature.setProbeSpeed(keyboardInteger);
+        break;
+    }
+
+    String[] newProbeFeatureList = new String[ProbeFeatureList.length];
+    for (int i = 0; i < ProbeFeatureList.length; i++) {
+      if (i != selectedFeature) {
+        newProbeFeatureList[i] = ProbeFeatureList[i];
+      } else {
+        newProbeFeatureList[i] = currentProbeFeature.toString();
+      }
+    }
+    model.set("ProbeFeatureList", newProbeFeatureList);
+    view.updateProbeFeatureLables(currentProbeFeature);
+    // System.out.println(newProbeFeatureList.toString());
+  }
+
   private void addEmptyProbeFeature() {
     String[] ProbeFeatureList = model.get("ProbeFeatureList", (String[]) null);
     int ListLength = 0;
@@ -400,7 +443,8 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     view.disableButtons();
   }
 
-  void deleteButton() {
+
+  private void deleteButton() {
     int index = view.getFeatureListIndex();
     String featureName = view.getFeatureListValue();
     String[] FeatureList = model.get("FeatureList", (String[]) null);
@@ -448,6 +492,24 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     return keyboard;
   }
 
+  public KeyboardNumberInput<Integer> getKeyboardNumber(int initialValue) {
+    KeyboardNumberInput<Integer> keyboard = keyboardInputFactory.createIntegerKeypadInput();
+    keyboard.setErrorValidator(validatorFactory.createIntegerRangeValidator(0, 1000));
+    keyboard.setInitialValue(initialValue);
+    return keyboard;
+  }
+
+  public KeyboardInputCallback<Integer> getCallbackForKeyboardNumber(final int id) {
+    return new KeyboardInputCallback<Integer>() {
+      @Override
+      public void onOk(Integer value) {
+        keyboardInteger = value;
+        // depending on id call 4 different not yet written functions
+        updateSpeeds(id);
+      }
+    };
+  }
+
   public KeyboardInputCallback<String> getCallbackForKeyboard() {
     return new KeyboardInputCallback<String>() {
       @Override
@@ -471,6 +533,7 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     String[] FeatureList = model.get("FeatureList", (String[]) null);
     return FeatureList;
   }
+
 
   private class ProbingThread extends Thread {
 
@@ -642,8 +705,13 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     // get the selected feature
     final int selectedFeature = index;
     final String[] ProbeFeatureList = model.get("ProbeFeatureList", (String[]) null);
-
-    final ProbeFeatureClass probeFeatureObject = new ProbeFeatureClass(ProbeFeatureList[selectedFeature]);
+    final ProbeFeatureClass probeFeatureObject;
+    try {
+      probeFeatureObject = new ProbeFeatureClass(ProbeFeatureList[selectedFeature]);
+    } catch (Exception e) {
+      System.out.println("Exception: " + e);
+      return null;
+    }
     return probeFeatureObject;
   }
 }

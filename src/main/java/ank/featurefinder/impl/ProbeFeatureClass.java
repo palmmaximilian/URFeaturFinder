@@ -293,8 +293,15 @@ public class ProbeFeatureClass {
     return command;
   }
 
+  public Boolean isDefined(){
+    // checks if none of the points are p[0,0,0,0,0,0]
+    // System.out.println(XUpPose + XDownPose + Y1UpPose + Y1DownPose + Y2UpPose + Y2DownPose);
+    return !(ZUpPose.equals("p[0,0,0,0,0,0]") || XUpPose.equals("p[0,0,0,0,0,0]") || XDownPose.equals("p[0,0,0,0,0,0]") || Y1UpPose.equals("p[0,0,0,0,0,0]") || Y1DownPose.equals("p[0,0,0,0,0,0]") || Y2UpPose.equals("p[0,0,0,0,0,0]") || Y2DownPose.equals("p[0,0,0,0,0,0]"));
+  }
+
   @Override
   public String toString() {
+  
     String[] returnString = { ZUpPose, XUpPose, XDownPose, Y1UpPose, Y1DownPose, Y2UpPose, Y2DownPose, Integer.toString(ZDirectionIndex), Integer.toString(XDirectionIndex), Integer.toString(YDirectionIndex), Integer.toString(ProbeForce), Double.toString(ProbeSpeed), Double.toString(RapidSpeed), Double.toString(RapidAcceleration), Boolean.toString(doubleProbe) };
 
     return String.join("/", returnString);
