@@ -1,0 +1,5 @@
+target/
+target/surefire-reports/TEST-ank.featurefinder.impl.AppTest.xml
+target/classes/META-INF/MANIFEST.MF
+target/featurefinder-1.0.2.urcap
+.gitignore
