@@ -10,6 +10,7 @@
 /home/mp/URCAP/ank.featurefinder/src/main/java/ank/featurefinder/impl/communicator/ScriptExporter.java
 /home/mp/URCAP/ank.featurefinder/src/main/java/ank/featurefinder/impl/installation/FeatureFinderInstallationNodeContribution.java
 /home/mp/URCAP/ank.featurefinder/src/main/java/ank/featurefinder/impl/probeFeature/ProbeFeatureProgramNodeService.java
+/home/mp/URCAP/ank.featurefinder/src/main/java/ank/featurefinder/DefaultVariables.java
 /home/mp/URCAP/ank.featurefinder/src/main/java/ank/featurefinder/impl/Activator.java
 /home/mp/URCAP/ank.featurefinder/src/main/java/ank/featurefinder/impl/ProbeFeatureClass.java
 /home/mp/URCAP/ank.featurefinder/src/main/java/ank/featurefinder/impl/installation/FeatureFinderInstallationNodeService.java

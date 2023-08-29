@@ -1,5 +1,8 @@
 package ank.featurefinder.impl;
 
+import ank.featurefinder.DefaultVariables;
+import ank.featurefinder.impl.communicator.ScriptCommand;
+import com.ur.urcap.api.domain.script.ScriptWriter;
 import com.ur.urcap.api.domain.value.Pose;
 
 public class ProbeFeatureClass {
@@ -16,11 +19,9 @@ public class ProbeFeatureClass {
   private String XDirection;
   private String YDirection;
 
-
   private int ZDirectionIndex;
   private int XDirectionIndex;
   private int YDirectionIndex;
-
 
   private String ZWrench;
   private String XWrench;
@@ -36,35 +37,34 @@ public class ProbeFeatureClass {
   private boolean doubleProbe;
 
   public ProbeFeatureClass() {
-    ZUpPose = "p[0,0,0,0,0,0]";
-    XUpPose = "p[0,0,0,0,0,0]";
-    XDownPose = "p[0,0,0,0,0,0]";
-    Y1UpPose = "p[0,0,0,0,0,0]";
-    Y1DownPose = "p[0,0,0,0,0,0]";
-    Y2UpPose = "p[0,0,0,0,0,0]";
-    Y2DownPose = "p[0,0,0,0,0,0]";
+    ZUpPose = DefaultVariables.DefaultPose;
+    XUpPose = DefaultVariables.DefaultPose;
+    XDownPose = DefaultVariables.DefaultPose;
+    Y1UpPose = DefaultVariables.DefaultPose;
+    Y1DownPose = DefaultVariables.DefaultPose;
+    Y2UpPose = DefaultVariables.DefaultPose;
+    Y2DownPose = DefaultVariables.DefaultPose;
 
-    ZDirection = "[0,0,1,0,0,0]";
-    XDirection = "[0,1,0,0,0,0]";
-    YDirection = "[1,0,0,0,0,0]";
+    ZDirectionIndex = DefaultVariables.DefaultZDirectionIndex;
+    XDirectionIndex = DefaultVariables.DefaultXDirectionIndex;
+    YDirectionIndex = DefaultVariables.DefaultYDirectionIndex;
 
-    ZDirectionIndex = 5;
-    XDirectionIndex = 3;
-    YDirectionIndex = 0;
+    ZDirection = generateDirectionString(ZDirectionIndex);
+    XDirection = generateDirectionString(XDirectionIndex);
+    YDirection = generateDirectionString(YDirectionIndex);
 
+    ProbeForce = DefaultVariables.DefaultForce;
 
-    ProbeForce = 8;
+    ProbeSpeed = DefaultVariables.DefaultProbeSpeed;
+    RapidSpeed = DefaultVariables.DefaultRapidSpeed;
+    RapidAcceleration = DefaultVariables.DefaultRapidAcceleration;
 
-    ProbeSpeed = 20;
-
-    RapidSpeed = 1000;
-    RapidAcceleration = 800;
-
-    doubleProbe = false;
+    doubleProbe = DefaultVariables.DefaultDoubleProbe;
 
     ZWrench = generateWrenchString(ZDirectionIndex, ProbeForce);
     XWrench = generateWrenchString(XDirectionIndex, ProbeForce);
     YWrench = generateWrenchString(YDirectionIndex, ProbeForce);
+    System.out.println(ProbeForce+" "+ZWrench+" "+XWrench+" "+YWrench);
   }
 
   public ProbeFeatureClass(String initString) {
@@ -86,18 +86,19 @@ public class ProbeFeatureClass {
     XDirection = generateDirectionString(XDirectionIndex);
     YDirection = generateDirectionString(YDirectionIndex);
 
+
+    ProbeForce = Integer.parseInt(initArray[10]);
+
+
     ZWrench = generateWrenchString(ZDirectionIndex, ProbeForce);
     XWrench = generateWrenchString(XDirectionIndex, ProbeForce);
     YWrench = generateWrenchString(YDirectionIndex, ProbeForce);
 
-    ProbeForce = Integer.parseInt(initArray[10]);
     ProbeSpeed = Double.parseDouble(initArray[11]);
-
     RapidSpeed = Double.parseDouble(initArray[12]);
     RapidAcceleration = Double.parseDouble(initArray[13]);
-  
-    doubleProbe = Boolean.parseBoolean(initArray[14]);
 
+    doubleProbe = Boolean.parseBoolean(initArray[14]);
   }
 
   public void setZUpPose(Pose pose) {
@@ -157,6 +158,7 @@ public class ProbeFeatureClass {
   }
 
   private String generateWrenchString(int index, int force) {
+    // System.out.println("generateWrenchString: " + index + " " + force);
     String[] directionArray = { "0", "0", "0", "0", "0", "0" };
     if (index % 2 == 0) {
       directionArray[(int) Math.floor(index / 2)] = Integer.toString(force);
@@ -275,7 +277,7 @@ public class ProbeFeatureClass {
   }
 
   private String generateLimitString(double speed) {
-    return "[" + String.valueOf(speed) + "," + String.valueOf(speed) + "," + String.valueOf(speed) + ",0.341,0.341,0.341]";
+    return "[" + String.valueOf(speed/1000) + "," + String.valueOf(speed/1000) + "," + String.valueOf(speed/1000) + ",0.341,0.341,0.341]";
   }
 
   public String generateZForceCommand() {
@@ -293,7 +295,7 @@ public class ProbeFeatureClass {
     return command;
   }
 
-  public Boolean isDefined(){
+  public Boolean isDefined() {
     // checks if none of the points are p[0,0,0,0,0,0]
     // System.out.println(XUpPose + XDownPose + Y1UpPose + Y1DownPose + Y2UpPose + Y2DownPose);
     return !(ZUpPose.equals("p[0,0,0,0,0,0]") || XUpPose.equals("p[0,0,0,0,0,0]") || XDownPose.equals("p[0,0,0,0,0,0]") || Y1UpPose.equals("p[0,0,0,0,0,0]") || Y1DownPose.equals("p[0,0,0,0,0,0]") || Y2UpPose.equals("p[0,0,0,0,0,0]") || Y2DownPose.equals("p[0,0,0,0,0,0]"));
@@ -301,9 +303,143 @@ public class ProbeFeatureClass {
 
   @Override
   public String toString() {
-  
     String[] returnString = { ZUpPose, XUpPose, XDownPose, Y1UpPose, Y1DownPose, Y2UpPose, Y2DownPose, Integer.toString(ZDirectionIndex), Integer.toString(XDirectionIndex), Integer.toString(YDirectionIndex), Integer.toString(ProbeForce), Double.toString(ProbeSpeed), Double.toString(RapidSpeed), Double.toString(RapidAcceleration), Boolean.toString(doubleProbe) };
 
     return String.join("/", returnString);
+  }
+
+  public ScriptCommand generateScriptCommand() {
+    System.out.println(XDirectionIndex + " " + YDirectionIndex + " " + ZDirectionIndex);
+    System.out.println(ZDirection + " " + XDirection + " " + YDirection);
+    System.out.println(ZWrench + " " + XWrench + " " + YWrench);
+    System.out.println(ProbeForce + " " + ProbeSpeed);
+    System.out.println(generateZForceCommand());
+
+    ScriptCommand sc = new ScriptCommand("ProbeFeature");
+    sc.appendLine("pose_list=\"\"");
+    sc.appendLine("movej(" + this.getZUpPoseString() + ")");
+    sc.appendLine("sleep(0.5)");
+    sc.appendLine("starting_pos=get_actual_tcp_pose()");
+    sc.appendLine(this.generateZForceCommand());
+    sc.appendLine("while (force()<5 and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
+    sc.appendLine("sleep(0.01)");
+    sc.appendLine("end");
+    sc.appendLine("end_force_mode()");
+    sc.appendLine("stopl(20)");
+    sc.appendLine("pose_list = str_cat(pose_list,get_actual_tcp_pose())");
+    sc.appendLine("pose_list= str_cat(pose_list,\";\")");
+    sc.appendLine("movej(" + this.getZUpPoseString() + ")");
+    sc.appendLine("movel(" + this.getXUpPoseString() + ")");
+    sc.appendLine("movel(" + this.getXDownPoseString() + ")");
+    sc.appendLine("sleep(0.5)");
+    sc.appendLine("starting_pos=get_actual_tcp_pose()");
+    sc.appendLine(this.generateXForceCommand());
+    sc.appendLine("while (force()<5 and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
+    sc.appendLine("sleep(0.01)");
+    sc.appendLine("end");
+    sc.appendLine("end_force_mode()");
+    sc.appendLine("stopl(20)");
+    sc.appendLine("pose_list = str_cat(pose_list,get_actual_tcp_pose())");
+    sc.appendLine("pose_list= str_cat(pose_list,\";\")");
+    sc.appendLine("movel(" + this.getXDownPoseString() + ")");
+    sc.appendLine("movel(" + this.getXUpPoseString() + ")");
+
+    sc.appendLine("movel(" + this.getY1UpPoseString() + ")");
+    sc.appendLine("movel(" + this.getY1DownPoseString() + ")");
+    sc.appendLine("sleep(0.5)");
+    sc.appendLine("starting_pos=get_actual_tcp_pose()");
+    sc.appendLine(this.generateYForceCommand());
+    sc.appendLine("while (force()<5 and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
+    sc.appendLine("sleep(0.01)");
+    sc.appendLine("end");
+    sc.appendLine("end_force_mode()");
+    sc.appendLine("stopl(20)");
+    sc.appendLine("pose_list = str_cat(pose_list,get_actual_tcp_pose())");
+    sc.appendLine("pose_list= str_cat(pose_list,\";\")");
+    sc.appendLine("movel(" + this.getY1DownPoseString() + ")");
+    sc.appendLine("movel(" + this.getY1UpPoseString() + ")");
+
+    sc.appendLine("movel(" + this.getY2UpPoseString() + ")");
+    sc.appendLine("movel(" + this.getY2DownPoseString() + ")");
+    sc.appendLine("sleep(0.5)");
+    sc.appendLine("starting_pos=get_actual_tcp_pose()");
+    sc.appendLine(this.generateYForceCommand());
+    sc.appendLine("while (force()<5 and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
+    sc.appendLine("sleep(0.01)");
+    sc.appendLine("end");
+    sc.appendLine("end_force_mode()");
+    sc.appendLine("stopl(20)");
+    sc.appendLine("pose_list = str_cat(pose_list,get_actual_tcp_pose())");
+    sc.appendLine("movel(" + this.getY2DownPoseString() + ")");
+    sc.appendLine("movel(" + this.getY2UpPoseString() + ")");
+
+    return sc;
+  }
+
+  public ScriptWriter generateURScriptCommand(ScriptWriter scriptWriter, String featureName) {
+    scriptWriter.appendLine("movej(" + this.getZUpPoseString() + ")");
+    scriptWriter.appendLine("sleep(0.5)");
+    scriptWriter.appendLine("starting_pos=get_actual_tcp_pose()");
+    scriptWriter.appendLine(this.generateZForceCommand());
+    scriptWriter.appendLine("while (force()<5 and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
+    scriptWriter.appendLine("sleep(0.01)");
+    scriptWriter.appendLine("end");
+    scriptWriter.appendLine("end_force_mode()");
+    scriptWriter.appendLine("stopl(20)");
+    scriptWriter.appendLine("ZProbePoint = get_actual_tcp_pose()");
+    scriptWriter.appendLine("movej(" + this.getZUpPoseString() + ")");
+
+    scriptWriter.appendLine("movel(" + this.getXUpPoseString() + ")");
+    scriptWriter.appendLine("movel(" + this.getXDownPoseString() + ")");
+    scriptWriter.appendLine("sleep(0.5)");
+    scriptWriter.appendLine("starting_pos=get_actual_tcp_pose()");
+    scriptWriter.appendLine(this.generateXForceCommand());
+    scriptWriter.appendLine("while (force()<5 and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
+    scriptWriter.appendLine("sleep(0.01)");
+    scriptWriter.appendLine("end");
+    scriptWriter.appendLine("end_force_mode()");
+    scriptWriter.appendLine("stopl(20)");
+    scriptWriter.appendLine("XProbePoint = get_actual_tcp_pose()");
+    scriptWriter.appendLine("movel(" + this.getXDownPoseString() + ")");
+    scriptWriter.appendLine("movel(" + this.getXUpPoseString() + ")");
+
+    scriptWriter.appendLine("movel(" + this.getY1UpPoseString() + ")");
+    scriptWriter.appendLine("movel(" + this.getY1DownPoseString() + ")");
+    scriptWriter.appendLine("sleep(0.5)");
+    scriptWriter.appendLine("starting_pos=get_actual_tcp_pose()");
+    scriptWriter.appendLine(this.generateYForceCommand());
+    scriptWriter.appendLine("while (force()<5 and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
+    scriptWriter.appendLine("sleep(0.01)");
+    scriptWriter.appendLine("end");
+    scriptWriter.appendLine("end_force_mode()");
+    scriptWriter.appendLine("stopl(20)");
+    scriptWriter.appendLine("Y1ProbePoint = get_actual_tcp_pose()");
+    scriptWriter.appendLine("movel(" + this.getY1DownPoseString() + ")");
+    scriptWriter.appendLine("movel(" + this.getY1UpPoseString() + ")");
+
+    scriptWriter.appendLine("movel(" + this.getY2UpPoseString() + ")");
+    scriptWriter.appendLine("movel(" + this.getY2DownPoseString() + ")");
+    scriptWriter.appendLine("sleep(0.5)");
+    scriptWriter.appendLine("starting_pos=get_actual_tcp_pose()");
+    scriptWriter.appendLine(this.generateYForceCommand());
+    scriptWriter.appendLine("while (force()<5 and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
+    scriptWriter.appendLine("sleep(0.01)");
+    scriptWriter.appendLine("end");
+    scriptWriter.appendLine("end_force_mode()");
+    scriptWriter.appendLine("stopl(20)");
+    scriptWriter.appendLine("Y2ProbePoint = get_actual_tcp_pose()");
+    scriptWriter.appendLine("movel(" + this.getY2DownPoseString() + ")");
+    scriptWriter.appendLine("movel(" + this.getY2UpPoseString() + ")");
+
+    scriptWriter.appendLine(" mY = (Y2ProbePoint[1] - Y1ProbePoint[1]) / (Y2ProbePoint[0] - Y1ProbePoint[0])");
+    scriptWriter.appendLine(" mX = -(1 / mY)");
+    scriptWriter.appendLine(" bX = XProbePoint[1] - (mX * XProbePoint[0])");
+    scriptWriter.appendLine(" bY = Y1ProbePoint[1] - (mY * Y1ProbePoint[0])");
+    scriptWriter.appendLine(" x0 = (bX - bY) / (mY - mX)");
+    scriptWriter.appendLine(" y0 = mY * x0 + bY");
+    scriptWriter.appendLine(" z0 = ZProbePoint[2]");
+    scriptWriter.appendLine(" rz = atan(mY/1)");
+    scriptWriter.appendLine(featureName + " = p[x0, y0, z0, 0, 0, rz]");
+    return scriptWriter;
   }
 }

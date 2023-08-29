@@ -1,0 +1,4 @@
+- Move configuration to seperate screen
+- Include Speeds in Program Node
+- Add "move to point" buttons
+- add "double tap" to URScript

@@ -63,6 +63,7 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
   @Override
   public void openView() {
     // create an empty list of Features
+    
     String[] FeatureList = model.get("FeatureList", (String[]) null);
     view.updateFeatureList(FeatureList);
     if (FeatureList == null) {
@@ -404,6 +405,13 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     int index = view.getFeatureListIndex();
 
     String newName = keyboardString;
+
+    
+    String regex="[a-zA-Z][a-zA-Z0-9_]{0,14}";
+    if (!newName.matches(regex)) {
+      System.out.println("Invalid name");
+      return;
+    }
     String[] FeatureList = model.get("FeatureList", (String[]) null);
     int ListLength = 0;
     if (FeatureList != (null)) {
@@ -431,8 +439,8 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     try {
       String featureName = view.getFeatureListValue();
       Pose oldFeature = featureContributionModel.getFeature(featureName).getPose();
-      featureContributionModel.removeFeature(featureName);
       featureContributionModel.addFeature(newName, newName, oldFeature);
+      featureContributionModel.removeFeature(featureName);
     } catch (Exception e) {
       System.out.println("Exception: " + e);
       return;
@@ -442,7 +450,6 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     view.updateFeatureList(newFeatureList);
     view.disableButtons();
   }
-
 
   private void deleteButton() {
     int index = view.getFeatureListIndex();
@@ -534,7 +541,6 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     return FeatureList;
   }
 
-
   private class ProbingThread extends Thread {
 
     private volatile boolean running = true;
@@ -562,66 +568,68 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
 
     final ProbeFeatureClass probeFeatureObject = new ProbeFeatureClass(ProbeFeatureList[selectedFeature]);
 
-    ScriptCommand sc = new ScriptCommand("ProbeFeature");
+    // ScriptCommand sc = new ScriptCommand("ProbeFeature");
+    ScriptCommand sc = probeFeatureObject.generateScriptCommand();
     ScriptExporter exporter = new ScriptExporter();
 
-    sc.appendLine("pose_list=\"\"");
-    sc.appendLine("movej(" + probeFeatureObject.getZUpPoseString() + ")");
-    sc.appendLine("sleep(0.5)");
-    sc.appendLine("starting_pos=get_actual_tcp_pose()");
-    sc.appendLine(probeFeatureObject.generateZForceCommand());
-    sc.appendLine("while (force()<5 and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
-    sc.appendLine("sleep(0.01)");
-    sc.appendLine("end");
-    sc.appendLine("end_force_mode()");
-    sc.appendLine("stopl(20)");
-    sc.appendLine("pose_list = str_cat(pose_list,get_actual_tcp_pose())");
-    sc.appendLine("pose_list= str_cat(pose_list,\";\")");
-    sc.appendLine("movej(" + probeFeatureObject.getZUpPoseString() + ")");
+    // sc.appendLine("pose_list=\"\"");
+    // sc.appendLine("movej(" + probeFeatureObject.getZUpPoseString() + ")");
+    // sc.appendLine("sleep(0.5)");
+    // sc.appendLine("starting_pos=get_actual_tcp_pose()");
+    // sc.appendLine(probeFeatureObject.generateZForceCommand());
+    // sc.appendLine("while (force()<5 and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
+    // sc.appendLine("sleep(0.01)");
+    // sc.appendLine("end");
+    // sc.appendLine("end_force_mode()");
+    // sc.appendLine("stopl(20)");
+    // sc.appendLine("pose_list = str_cat(pose_list,get_actual_tcp_pose())");
+    // sc.appendLine("pose_list= str_cat(pose_list,\";\")");
+    // sc.appendLine("movej(" + probeFeatureObject.getZUpPoseString() + ")");
 
-    sc.appendLine("movel(" + probeFeatureObject.getXUpPoseString() + ")");
-    sc.appendLine("movel(" + probeFeatureObject.getXDownPoseString() + ")");
-    sc.appendLine("sleep(0.5)");
-    sc.appendLine("starting_pos=get_actual_tcp_pose()");
-    sc.appendLine(probeFeatureObject.generateXForceCommand());
-    sc.appendLine("while (force()<5 and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
-    sc.appendLine("sleep(0.01)");
-    sc.appendLine("end");
-    sc.appendLine("end_force_mode()");
-    sc.appendLine("stopl(20)");
-    sc.appendLine("pose_list = str_cat(pose_list,get_actual_tcp_pose())");
-    sc.appendLine("pose_list= str_cat(pose_list,\";\")");
-    sc.appendLine("movel(" + probeFeatureObject.getXDownPoseString() + ")");
-    sc.appendLine("movel(" + probeFeatureObject.getXUpPoseString() + ")");
+    // sc.appendLine("movel(" + probeFeatureObject.getXUpPoseString() + ")");
+    // sc.appendLine("movel(" + probeFeatureObject.getXDownPoseString() + ")");
+    // sc.appendLine("sleep(0.5)");
+    // sc.appendLine("starting_pos=get_actual_tcp_pose()");
+    // sc.appendLine(probeFeatureObject.generateXForceCommand());
+    // sc.appendLine("while (force()<5 and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
+    // sc.appendLine("sleep(0.01)");
+    // sc.appendLine("end");
+    // sc.appendLine("end_force_mode()");
+    // sc.appendLine("stopl(20)");
+    // sc.appendLine("pose_list = str_cat(pose_list,get_actual_tcp_pose())");
+    // sc.appendLine("pose_list= str_cat(pose_list,\";\")");
+    // sc.appendLine("movel(" + probeFeatureObject.getXDownPoseString() + ")");
+    // sc.appendLine("movel(" + probeFeatureObject.getXUpPoseString() + ")");
 
-    sc.appendLine("movel(" + probeFeatureObject.getY1UpPoseString() + ")");
-    sc.appendLine("movel(" + probeFeatureObject.getY1DownPoseString() + ")");
-    sc.appendLine("sleep(0.5)");
-    sc.appendLine("starting_pos=get_actual_tcp_pose()");
-    sc.appendLine(probeFeatureObject.generateYForceCommand());
-    sc.appendLine("while (force()<5 and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
-    sc.appendLine("sleep(0.01)");
-    sc.appendLine("end");
-    sc.appendLine("end_force_mode()");
-    sc.appendLine("stopl(20)");
-    sc.appendLine("pose_list = str_cat(pose_list,get_actual_tcp_pose())");
-    sc.appendLine("pose_list= str_cat(pose_list,\";\")");
-    sc.appendLine("movel(" + probeFeatureObject.getY1DownPoseString() + ")");
-    sc.appendLine("movel(" + probeFeatureObject.getY1UpPoseString() + ")");
+    // sc.appendLine("movel(" + probeFeatureObject.getY1UpPoseString() + ")");
+    // sc.appendLine("movel(" + probeFeatureObject.getY1DownPoseString() + ")");
+    // sc.appendLine("sleep(0.5)");
+    // sc.appendLine("starting_pos=get_actual_tcp_pose()");
+    // sc.appendLine(probeFeatureObject.generateYForceCommand());
+    // sc.appendLine("while (force()<5 and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
+    // sc.appendLine("sleep(0.01)");
+    // sc.appendLine("end");
+    // sc.appendLine("end_force_mode()");
+    // sc.appendLine("stopl(20)");
+    // sc.appendLine("pose_list = str_cat(pose_list,get_actual_tcp_pose())");
+    // sc.appendLine("pose_list= str_cat(pose_list,\";\")");
+    // sc.appendLine("movel(" + probeFeatureObject.getY1DownPoseString() + ")");
+    // sc.appendLine("movel(" + probeFeatureObject.getY1UpPoseString() + ")");
 
-    sc.appendLine("movel(" + probeFeatureObject.getY2UpPoseString() + ")");
-    sc.appendLine("movel(" + probeFeatureObject.getY2DownPoseString() + ")");
-    sc.appendLine("sleep(0.5)");
-    sc.appendLine("starting_pos=get_actual_tcp_pose()");
-    sc.appendLine(probeFeatureObject.generateYForceCommand());
-    sc.appendLine("while (force()<5 and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
-    sc.appendLine("sleep(0.01)");
-    sc.appendLine("end");
-    sc.appendLine("end_force_mode()");
-    sc.appendLine("stopl(20)");
-    sc.appendLine("pose_list = str_cat(pose_list,get_actual_tcp_pose())");
-    sc.appendLine("movel(" + probeFeatureObject.getY2DownPoseString() + ")");
-    sc.appendLine("movel(" + probeFeatureObject.getY2UpPoseString() + ")");
+    // sc.appendLine("movel(" + probeFeatureObject.getY2UpPoseString() + ")");
+    // sc.appendLine("movel(" + probeFeatureObject.getY2DownPoseString() + ")");
+    // sc.appendLine("sleep(0.5)");
+    // sc.appendLine("starting_pos=get_actual_tcp_pose()");
+    // sc.appendLine(probeFeatureObject.generateYForceCommand());
+    // sc.appendLine("while (force()<5 and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
+    // sc.appendLine("sleep(0.01)");
+    // sc.appendLine("end");
+    // sc.appendLine("end_force_mode()");
+    // sc.appendLine("stopl(20)");
+    // sc.appendLine("pose_list = str_cat(pose_list,get_actual_tcp_pose())");
+    // sc.appendLine("movel(" + probeFeatureObject.getY2DownPoseString() + ")");
+    // sc.appendLine("movel(" + probeFeatureObject.getY2UpPoseString() + ")");
+
     String Pose_list = exporter.exportStringFromURScript(sc, "pose_list");
 
     System.out.println("right after sending command");

@@ -1,5 +1,6 @@
 package ank.featurefinder.impl.installation;
 
+import ank.featurefinder.DefaultVariables;
 import ank.featurefinder.impl.ProbeFeatureClass;
 import com.ur.urcap.api.contribution.installation.swing.SwingInstallationNodeView;
 import com.ur.urcap.api.domain.userinteraction.keyboard.KeyboardNumberInput;
@@ -8,9 +9,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-// import jframe
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -47,13 +46,13 @@ public class FeatureFinderInstallationNodeView implements SwingInstallationNodeV
 
   private JButton ProbeFeatureButton = new JButton("Probe Feature!");
 
-  private JLabel ZUpLabel = new JLabel("p[0,0,0,0,0,0]");
-  private JLabel XUpLabel = new JLabel("p[0,0,0,0,0,0]");
-  private JLabel XDownLabel = new JLabel("p[0,0,0,0,0,0]");
-  private JLabel Y1UpLabel = new JLabel("p[0,0,0,0,0,0]");
-  private JLabel Y1DownLabel = new JLabel("p[0,0,0,0,0,0]");
-  private JLabel Y2UpLabel = new JLabel("p[0,0,0,0,0,0]");
-  private JLabel Y2DownLabel = new JLabel("p[0,0,0,0,0,0]");
+  private JLabel ZUpLabel = new JLabel();
+  private JLabel XUpLabel = new JLabel();
+  private JLabel XDownLabel = new JLabel();
+  private JLabel Y1UpLabel = new JLabel();
+  private JLabel Y1DownLabel = new JLabel();
+  private JLabel Y2UpLabel = new JLabel();
+  private JLabel Y2DownLabel = new JLabel();
 
   // add a textinput
 
@@ -612,6 +611,14 @@ public class FeatureFinderInstallationNodeView implements SwingInstallationNodeV
     RapidAccLabel.setEnabled(false);
     ProbingSpeedLabel.setEnabled(false);
     DoubleProbeLabel.setEnabled(false);
+
+    ZUpButton.setBackground(null);
+    XUpButton.setBackground(null);
+    XDownButton.setBackground(null);
+    Y1UpButton.setBackground(null);
+    Y1DownButton.setBackground(null);
+    Y2UpButton.setBackground(null);
+    Y2DownButton.setBackground(null);
   }
 
   public void updateFeatureList(String[] FeatureList) {
@@ -662,6 +669,20 @@ public class FeatureFinderInstallationNodeView implements SwingInstallationNodeV
     ProbingSpeed.setText(Double.toString(ProbeFeature.getProbeSpeed()));
 
     DoubleProbeBox.setSelected(ProbeFeature.getDoubleProbe());
+    featureFrame.repaint();
+    Color undefinedYellow =new Color(255, 255, 112);
+
+    ZUpButton.setBackground(ProbeFeature.getZUpPoseString().equals(DefaultVariables.DefaultPose) ? undefinedYellow : null);
+    XUpButton.setBackground(ProbeFeature.getXUpPoseString().equals(DefaultVariables.DefaultPose) ? undefinedYellow : null);
+    XDownButton.setBackground(ProbeFeature.getXDownPoseString().equals(DefaultVariables.DefaultPose) ? undefinedYellow : null);
+    Y1UpButton.setBackground(ProbeFeature.getY1UpPoseString().equals(DefaultVariables.DefaultPose) ? undefinedYellow : null);
+    Y1DownButton.setBackground(ProbeFeature.getY1DownPoseString().equals(DefaultVariables.DefaultPose) ? undefinedYellow : null);
+    Y2UpButton.setBackground(ProbeFeature.getY2UpPoseString().equals(DefaultVariables.DefaultPose) ? undefinedYellow : null);
+    Y2DownButton.setBackground(ProbeFeature.getY2DownPoseString().equals(DefaultVariables.DefaultPose) ? undefinedYellow : null);
+
+
+    ProbeFeatureButton.setEnabled(ProbeFeature.isDefined()? true : false);
+
   }
 
   private class FeatureListRenderer extends DefaultListCellRenderer {
@@ -680,10 +701,11 @@ public class FeatureFinderInstallationNodeView implements SwingInstallationNodeV
         if (currentProbeFeature.isDefined()) { // Example: every even index has a yellow background
           component.setBackground(Color.WHITE);
         } else {
-          component.setBackground(Color.YELLOW);
+          // component.setBackground(Color.YELLOW);
+          component.setBackground(new Color(255, 255, 112));
         }
       }
-
+      
       return component;
     }
   }
