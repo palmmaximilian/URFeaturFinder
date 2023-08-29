@@ -11,6 +11,10 @@ public abstract class DefaultVariables {
   public static double DefaultRapidSpeed=1000;
   public static double DefaultRapidAcceleration=800;
 
+  public static double safeProbeSpeed=20;
+  public static double safeRapidSpeed= 150;
+  public static double safeRapidAcc = 500;
+
   public static int DefaultZDirectionIndex=5;
   public static int DefaultXDirectionIndex=3;
   public static int DefaultYDirectionIndex=0;
