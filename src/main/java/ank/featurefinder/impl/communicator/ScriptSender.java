@@ -60,4 +60,18 @@ public class ScriptSender {
 			System.out.println(e);
 		}
 	}
+
+	public void sendPopup(String message)
+	{
+		ScriptCommand command = new ScriptCommand();
+		command.appendLine("popup(\"" + message + "\")");
+		sendToSecondary(command.toString());
+	}
+
+	public void sendLogMsg(String message)
+	{
+		ScriptCommand command = new ScriptCommand();
+		command.appendLine("textmsg(\"" + message + "\")");
+		sendToSecondary(command.toString());
+	}
 }

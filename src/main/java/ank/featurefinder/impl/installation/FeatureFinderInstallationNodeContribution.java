@@ -3,6 +3,7 @@ package ank.featurefinder.impl.installation;
 import ank.featurefinder.impl.ProbeFeatureClass;
 import ank.featurefinder.impl.communicator.ScriptCommand;
 import ank.featurefinder.impl.communicator.ScriptExporter;
+import ank.featurefinder.impl.communicator.ScriptSender;
 import com.ur.urcap.api.contribution.InstallationNodeContribution;
 import com.ur.urcap.api.contribution.installation.InstallationAPIProvider;
 import com.ur.urcap.api.domain.UserInterfaceAPI;
@@ -63,7 +64,7 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
   @Override
   public void openView() {
     // create an empty list of Features
-    
+
     String[] FeatureList = model.get("FeatureList", (String[]) null);
     view.updateFeatureList(FeatureList);
     if (FeatureList == null) {
@@ -406,8 +407,7 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
 
     String newName = keyboardString;
 
-    
-    String regex="[a-zA-Z][a-zA-Z0-9_]{0,14}";
+    String regex = "[a-zA-Z][a-zA-Z0-9_]{0,14}";
     if (!newName.matches(regex)) {
       System.out.println("Invalid name");
       return;
@@ -501,7 +501,7 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
 
   public KeyboardNumberInput<Integer> getKeyboardNumber(int initialValue) {
     KeyboardNumberInput<Integer> keyboard = keyboardInputFactory.createIntegerKeypadInput();
-    keyboard.setErrorValidator(validatorFactory.createIntegerRangeValidator(0, 1000));
+    keyboard.setErrorValidator(validatorFactory.createIntegerRangeValidator(0, 2000));
     keyboard.setInitialValue(initialValue);
     return keyboard;
   }
@@ -572,64 +572,6 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     ScriptCommand sc = probeFeatureObject.generateScriptCommand();
     ScriptExporter exporter = new ScriptExporter();
 
-    // sc.appendLine("pose_list=\"\"");
-    // sc.appendLine("movej(" + probeFeatureObject.getZUpPoseString() + ")");
-    // sc.appendLine("sleep(0.5)");
-    // sc.appendLine("starting_pos=get_actual_tcp_pose()");
-    // sc.appendLine(probeFeatureObject.generateZForceCommand());
-    // sc.appendLine("while (force()<5 and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
-    // sc.appendLine("sleep(0.01)");
-    // sc.appendLine("end");
-    // sc.appendLine("end_force_mode()");
-    // sc.appendLine("stopl(20)");
-    // sc.appendLine("pose_list = str_cat(pose_list,get_actual_tcp_pose())");
-    // sc.appendLine("pose_list= str_cat(pose_list,\";\")");
-    // sc.appendLine("movej(" + probeFeatureObject.getZUpPoseString() + ")");
-
-    // sc.appendLine("movel(" + probeFeatureObject.getXUpPoseString() + ")");
-    // sc.appendLine("movel(" + probeFeatureObject.getXDownPoseString() + ")");
-    // sc.appendLine("sleep(0.5)");
-    // sc.appendLine("starting_pos=get_actual_tcp_pose()");
-    // sc.appendLine(probeFeatureObject.generateXForceCommand());
-    // sc.appendLine("while (force()<5 and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
-    // sc.appendLine("sleep(0.01)");
-    // sc.appendLine("end");
-    // sc.appendLine("end_force_mode()");
-    // sc.appendLine("stopl(20)");
-    // sc.appendLine("pose_list = str_cat(pose_list,get_actual_tcp_pose())");
-    // sc.appendLine("pose_list= str_cat(pose_list,\";\")");
-    // sc.appendLine("movel(" + probeFeatureObject.getXDownPoseString() + ")");
-    // sc.appendLine("movel(" + probeFeatureObject.getXUpPoseString() + ")");
-
-    // sc.appendLine("movel(" + probeFeatureObject.getY1UpPoseString() + ")");
-    // sc.appendLine("movel(" + probeFeatureObject.getY1DownPoseString() + ")");
-    // sc.appendLine("sleep(0.5)");
-    // sc.appendLine("starting_pos=get_actual_tcp_pose()");
-    // sc.appendLine(probeFeatureObject.generateYForceCommand());
-    // sc.appendLine("while (force()<5 and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
-    // sc.appendLine("sleep(0.01)");
-    // sc.appendLine("end");
-    // sc.appendLine("end_force_mode()");
-    // sc.appendLine("stopl(20)");
-    // sc.appendLine("pose_list = str_cat(pose_list,get_actual_tcp_pose())");
-    // sc.appendLine("pose_list= str_cat(pose_list,\";\")");
-    // sc.appendLine("movel(" + probeFeatureObject.getY1DownPoseString() + ")");
-    // sc.appendLine("movel(" + probeFeatureObject.getY1UpPoseString() + ")");
-
-    // sc.appendLine("movel(" + probeFeatureObject.getY2UpPoseString() + ")");
-    // sc.appendLine("movel(" + probeFeatureObject.getY2DownPoseString() + ")");
-    // sc.appendLine("sleep(0.5)");
-    // sc.appendLine("starting_pos=get_actual_tcp_pose()");
-    // sc.appendLine(probeFeatureObject.generateYForceCommand());
-    // sc.appendLine("while (force()<5 and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
-    // sc.appendLine("sleep(0.01)");
-    // sc.appendLine("end");
-    // sc.appendLine("end_force_mode()");
-    // sc.appendLine("stopl(20)");
-    // sc.appendLine("pose_list = str_cat(pose_list,get_actual_tcp_pose())");
-    // sc.appendLine("movel(" + probeFeatureObject.getY2DownPoseString() + ")");
-    // sc.appendLine("movel(" + probeFeatureObject.getY2UpPoseString() + ")");
-
     String Pose_list = exporter.exportStringFromURScript(sc, "pose_list");
 
     System.out.println("right after sending command");
@@ -644,11 +586,17 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     //   System.out.println(Pose_list_array[i]);
     // }
     Pose origin = calculateFeatureOrigin(Pose_list_array);
+    if (origin == null) {
+      System.out.println("origin is null");
+      return;
+    }
     // System.out.println(origin.toString());
 
     try {
       String featurename = view.getFeatureListValue();
-      featureContributionModel.updateFeature(featurename, origin);
+      // featureContributionModel.updateFeature(featurename, origin);
+      featureContributionModel.removeFeature(featurename);
+      featureContributionModel.addFeature(featurename, featurename, origin);
     } catch (Exception e) {
       System.out.println("Exception: " + e);
       return;
@@ -666,8 +614,10 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     ZProbePointString[5] = ZProbePointString[5].substring(0, ZProbePointString[5].length() - 1);
     XProbePointString[0] = XProbePointString[0].substring(2);
     XProbePointString[5] = XProbePointString[5].substring(0, XProbePointString[5].length() - 1);
+
     Y1ProbePointString[0] = Y1ProbePointString[0].substring(2);
     Y1ProbePointString[5] = Y1ProbePointString[5].substring(0, Y1ProbePointString[5].length() - 1);
+
     Y2ProbePointString[0] = Y2ProbePointString[0].substring(2);
     Y2ProbePointString[5] = Y2ProbePointString[5].substring(0, Y2ProbePointString[5].length() - 1);
 
@@ -694,19 +644,52 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     double x0 = (bX - bY) / (mY - mX);
     double y0 = mY * x0 + bY;
     double z0 = ZProbePoint[2];
-    double rz = Math.atan(mY / 1);
+    double rz = 0;
 
-    // System.out.println("mY: " + mY);
-    // System.out.println("mX: " + mX);
-    // System.out.println("bX: " + bX);
-    // System.out.println("bY: " + bY);
-    // System.out.println("x0: " + x0);
-    // System.out.println("y0: " + y0);
-    // System.out.println("z0: " + z0);
-    // System.out.println("rz: " + rz);
+    double[] v1 = { 1, 0 };
+    double y2[] = { Y2ProbePoint[0], Y2ProbePoint[1] };
+    double y1[] = { Y1ProbePoint[0], Y1ProbePoint[1] };
 
-    Pose origin = poseFactory.createPose(x0, y0, z0, 0, 0, rz, Length.Unit.M, Angle.Unit.RAD);
+    System.out.println("v1: " + v1[0] + " " + v1[1]);
+    System.out.println("y2: " + y2[0] + " " + y2[1]);
+    System.out.println("y1: " + y1[0] + " " + y1[1]);
+
+    // angle = arccos(v1*(y2y1)/(norm(v1)*norm(y2-y1)))
+    double angle = Math.acos(vectorScalar(v1, vectorSub(y2, y1)) / (vectorNorm(v1) * vectorNorm(vectorSub(y2, y1))));
+    angle = angle + Math.PI / 2;
+    System.out.println("angle: " + angle);
+
+    ScriptSender scriptSender = new ScriptSender();
+    // Pose origin = poseFactory.createPose(x0, y0, z0, 0, 0, rz, Length.Unit.M, Angle.Unit.RAD);
+    Pose origin = poseFactory.createPose(x0, y0, z0, 0, 0, angle, Length.Unit.M, Angle.Unit.RAD);
+    scriptSender.sendLogMsg(origin.toString());
+    scriptSender.sendPopup("angle: " + angle);
+
     return origin;
+  }
+
+  private double[] vectorSub(double[] v1, double[] v2) {
+    double[] result = new double[v1.length];
+    for (int i = 0; i < v1.length; i++) {
+      result[i] = v1[i] - v2[i];
+    }
+    return result;
+  }
+
+  private double vectorScalar(double[] v1, double[] v2) {
+    double result = 0;
+    for (int i = 0; i < v1.length; i++) {
+      result += v1[i] * v2[i];
+    }
+    return result;
+  }
+
+  private double vectorNorm(double[] v) {
+    double result = 0;
+    for (int i = 0; i < v.length; i++) {
+      result += v[i] * v[i];
+    }
+    return Math.sqrt(result);
   }
 
   public ProbeFeatureClass getProbeFeatureObject(int index) {

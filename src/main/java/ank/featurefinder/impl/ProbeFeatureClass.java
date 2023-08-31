@@ -370,6 +370,8 @@ public class ProbeFeatureClass {
     sc.appendLine("movel(" + this.getY2DownPoseString() + ",a="+String.valueOf(DefaultVariables.safeRapidAcc/1000)+",v="+String.valueOf(DefaultVariables.safeRapidSpeed/1000)+")");
     sc.appendLine("movel(" + this.getY2UpPoseString() + ",a="+String.valueOf(DefaultVariables.safeRapidAcc/1000)+",v="+String.valueOf(DefaultVariables.safeRapidSpeed/1000)+")");
 
+
+
     return sc;
   }
 
@@ -438,6 +440,28 @@ public class ProbeFeatureClass {
     scriptWriter.appendLine(" z0 = ZProbePoint[2]");
     scriptWriter.appendLine(" rz = atan(mY/1)");
     scriptWriter.appendLine(featureName + " = p[x0, y0, z0, 0, 0, rz]");
+
+    // double dx = x0 - XProbePoint[0]; // Adjust the order and signs
+    // double dy = y0 - Y1ProbePoint[1]; // Adjust the order and signs
+    // double dz = z0 - ZProbePoint[2]; // Adjust the order
+
+    // double dotProduct = dx * 0 + dy * 0 + dz * rz; // Calculate dot product
+
+    scriptWriter.appendLine("dx = x0 - XProbePoint[0]");
+    scriptWriter.appendLine("dy = y0 - Y1ProbePoint[1]");
+    scriptWriter.appendLine("dz = z0 - ZProbePoint[2]");
+    scriptWriter.appendLine("dotProduct = dx * 0 + dy * 0 + dz * rz");
+    scriptWriter.appendLine("textmsg(\"__________________\")");
+    scriptWriter.appendLine("textmsg(\"" + featureName + "\")");
+    scriptWriter.appendLine("textmsg(ZProbePoint)");
+    scriptWriter.appendLine("textmsg(XProbePoint)");
+    scriptWriter.appendLine("textmsg(Y1ProbePoint)");
+    scriptWriter.appendLine("textmsg(Y2ProbePoint)");
+    scriptWriter.appendLine("textmsg(dotProduct)");
+    scriptWriter.appendLine("textmsg(dx)");
+    scriptWriter.appendLine("textmsg(dy)");
+    scriptWriter.appendLine("textmsg(dz)");
+    scriptWriter.appendLine("textmsg(rz)");
     return scriptWriter;
   }
 }
