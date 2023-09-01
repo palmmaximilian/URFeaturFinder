@@ -22,6 +22,7 @@ import com.ur.urcap.api.domain.value.PoseFactory;
 import com.ur.urcap.api.domain.value.robotposition.PositionParameters;
 import com.ur.urcap.api.domain.value.simple.Angle;
 import com.ur.urcap.api.domain.value.simple.Length;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -586,10 +587,7 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     //   System.out.println(Pose_list_array[i]);
     // }
     Pose origin = calculateFeatureOrigin(Pose_list_array);
-    if (origin == null) {
-      System.out.println("origin is null");
-      return;
-    }
+
     // System.out.println(origin.toString());
 
     try {
@@ -644,26 +642,37 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     double x0 = (bX - bY) / (mY - mX);
     double y0 = mY * x0 + bY;
     double z0 = ZProbePoint[2];
-    double rz = 0;
 
     double[] v1 = { 1, 0 };
-    double y2[] = { Y2ProbePoint[0], Y2ProbePoint[1] };
-    double y1[] = { Y1ProbePoint[0], Y1ProbePoint[1] };
-
-    System.out.println("v1: " + v1[0] + " " + v1[1]);
-    System.out.println("y2: " + y2[0] + " " + y2[1]);
-    System.out.println("y1: " + y1[0] + " " + y1[1]);
+    double p2[] = { Y2ProbePoint[0], Y2ProbePoint[1] };
+    double p1[] = { Y1ProbePoint[0], Y1ProbePoint[1] };
 
     // angle = arccos(v1*(y2y1)/(norm(v1)*norm(y2-y1)))
-    double angle = Math.acos(vectorScalar(v1, vectorSub(y2, y1)) / (vectorNorm(v1) * vectorNorm(vectorSub(y2, y1))));
-    angle = angle + Math.PI / 2;
-    System.out.println("angle: " + angle);
+    double angle = Math.acos(vectorScalar(v1, vectorSub(p2, p1)) / (vectorNorm(v1) * vectorNorm(vectorSub(p2, p1))));
 
     ScriptSender scriptSender = new ScriptSender();
-    // Pose origin = poseFactory.createPose(x0, y0, z0, 0, 0, rz, Length.Unit.M, Angle.Unit.RAD);
+    
+    angle = Math.atan(mY / 1);
+    angle = Math.toDegrees(angle);
+
+    if (Y2ProbePoint[0] < Y1ProbePoint[0] && Y2ProbePoint[1] > Y1ProbePoint[1]) {
+      angle = 90 + angle;
+    } else if (Y2ProbePoint[0] < Y1ProbePoint[0] && Y2ProbePoint[1] < Y1ProbePoint[1]) {
+      angle = 90 + angle;
+    } else if (Y2ProbePoint[0] > Y1ProbePoint[0] && Y2ProbePoint[1] < Y1ProbePoint[1]) {
+      angle = -90 + angle;
+    } else if (Y2ProbePoint[0] > Y1ProbePoint[0] && Y2ProbePoint[1] > Y1ProbePoint[1]) {
+      angle = -90 + angle;
+    } else {}
+
+    angle = Math.toRadians(angle);
+
     Pose origin = poseFactory.createPose(x0, y0, z0, 0, 0, angle, Length.Unit.M, Angle.Unit.RAD);
-    scriptSender.sendLogMsg(origin.toString());
-    scriptSender.sendPopup("angle: " + angle);
+
+    scriptSender.sendLogMsg("origin: " + origin.toString());
+    scriptSender.sendLogMsg("Y1: " + Y1ProbePoint[0] + " " + Y1ProbePoint[1]);
+    scriptSender.sendLogMsg("Y2: " + Y2ProbePoint[0] + " " + Y2ProbePoint[1]);
+    scriptSender.sendLogMsg("angle: " + Math.toDegrees(angle));
 
     return origin;
   }
