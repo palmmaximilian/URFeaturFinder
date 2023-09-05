@@ -22,7 +22,6 @@ import com.ur.urcap.api.domain.value.PoseFactory;
 import com.ur.urcap.api.domain.value.robotposition.PositionParameters;
 import com.ur.urcap.api.domain.value.simple.Angle;
 import com.ur.urcap.api.domain.value.simple.Length;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -42,6 +41,8 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
   private Pose zeroPose;
   private UserInterfaceAPI uiapi;
   private FunctionModel functionModel;
+
+  private ScriptExporter exporter = new ScriptExporter();
 
   FeatureFinderInstallationNodeContribution(InstallationAPIProvider apiProvider, DataModel model, FeatureFinderInstallationNodeView view) {
     this.uiapi = apiProvider.getUserInterfaceAPI();
@@ -95,6 +96,40 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     writer.appendLine(" z0 = ZProbePoint[2]");
     writer.appendLine(" rz = atan(mY/1)");
     writer.appendLine(" return (p[x0, y0, z0, 0, 0, rz])");
+    writer.appendLine("end");
+
+    writer.appendLine("def vectorSub(v1, v2):");
+    writer.appendLine(" result = [0,0]");
+    writer.appendLine("i=0");
+    writer.appendLine("while i < length(v1):");
+    writer.appendLine(" result[i] = v1[i] - v2[i]");
+    writer.appendLine(" i = i + 1");
+    writer.appendLine("end");
+    writer.appendLine("return result");
+    writer.appendLine("end");
+
+    writer.appendLine("def vectorCross2D(v1, v2):");
+    writer.appendLine(" return v1[0] * v2[1] - v1[1] * v2[0]");
+    writer.appendLine("end");
+
+    writer.appendLine("def vectorScalar(v1, v2):");
+    writer.appendLine(" result = 0");
+    writer.appendLine(" i=0");
+    writer.appendLine(" while i < length(v1):");
+    writer.appendLine("   result = result + v1[i] * v2[i]");
+    writer.appendLine("   i = i + 1");
+    writer.appendLine(" end");
+    writer.appendLine(" return result");
+    writer.appendLine("end");
+
+    writer.appendLine("def vectorNorm(v):");
+    writer.appendLine(" result = 0");
+    writer.appendLine(" i=0");
+    writer.appendLine(" while i < length(v):");
+    writer.appendLine("   result = result + v[i] * v[i]");
+    writer.appendLine("   i = i + 1");
+    writer.appendLine(" end");
+    writer.appendLine(" return sqrt(result)");
     writer.appendLine("end");
   }
 
@@ -571,8 +606,6 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
 
     // ScriptCommand sc = new ScriptCommand("ProbeFeature");
     ScriptCommand sc = probeFeatureObject.generateScriptCommand();
-    ScriptExporter exporter = new ScriptExporter();
-
     String Pose_list = exporter.exportStringFromURScript(sc, "pose_list");
 
     System.out.println("right after sending command");
@@ -583,12 +616,7 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
       System.out.println("Error: Pose_list_array.length != 4");
       return;
     }
-    // for (int i = 0; i < 4; i++) {
-    //   System.out.println(Pose_list_array[i]);
-    // }
     Pose origin = calculateFeatureOrigin(Pose_list_array);
-
-    // System.out.println(origin.toString());
 
     try {
       String featurename = view.getFeatureListValue();
@@ -643,29 +671,41 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     double y0 = mY * x0 + bY;
     double z0 = ZProbePoint[2];
 
-    double[] v1 = { 1, 0 };
-    double p2[] = { Y2ProbePoint[0], Y2ProbePoint[1] };
-    double p1[] = { Y1ProbePoint[0], Y1ProbePoint[1] };
-
-    // angle = arccos(v1*(y2y1)/(norm(v1)*norm(y2-y1)))
-    double angle = Math.acos(vectorScalar(v1, vectorSub(p2, p1)) / (vectorNorm(v1) * vectorNorm(vectorSub(p2, p1))));
+    double angle = 0;
 
     ScriptSender scriptSender = new ScriptSender();
-    
-    angle = Math.atan(mY / 1);
-    angle = Math.toDegrees(angle);
 
-    if (Y2ProbePoint[0] < Y1ProbePoint[0] && Y2ProbePoint[1] > Y1ProbePoint[1]) {
-      angle = 90 + angle;
-    } else if (Y2ProbePoint[0] < Y1ProbePoint[0] && Y2ProbePoint[1] < Y1ProbePoint[1]) {
-      angle = 90 + angle;
-    } else if (Y2ProbePoint[0] > Y1ProbePoint[0] && Y2ProbePoint[1] < Y1ProbePoint[1]) {
-      angle = -90 + angle;
-    } else if (Y2ProbePoint[0] > Y1ProbePoint[0] && Y2ProbePoint[1] > Y1ProbePoint[1]) {
-      angle = -90 + angle;
-    } else {}
+    double method = 0;
 
-    angle = Math.toRadians(angle);
+    if (method == 0) {
+      // Jess approach
+      double[] v1 = { 1, 0 };
+      double p2[] = { Y2ProbePoint[0], Y2ProbePoint[1] };
+      double p1[] = { Y1ProbePoint[0], Y1ProbePoint[1] };
+
+      double Cos = vectorScalar(v1, vectorSub(p2, p1)) / (vectorNorm(v1) * vectorNorm(vectorSub(p2, p1)));
+      double det = vectorCross2D(v1, vectorSub(p2, p1));
+
+      if (det > 0) {
+        angle = Math.acos(Cos);
+      } else {
+        angle = 2 * Math.PI - Math.acos(Cos);
+      }
+    }
+
+    if (method == 1) {
+      // Max approach
+      angle = Math.atan(mY / 1);
+      angle = Math.toDegrees(angle);
+
+      if (Y2ProbePoint[0] < Y1ProbePoint[0]) {
+        angle = 90 + angle;
+      } else if (Y2ProbePoint[0] > Y1ProbePoint[0]) {
+        angle = -90 + angle;
+      }
+
+      angle = Math.toRadians(angle);
+    }
 
     Pose origin = poseFactory.createPose(x0, y0, z0, 0, 0, angle, Length.Unit.M, Angle.Unit.RAD);
 
@@ -683,6 +723,10 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
       result[i] = v1[i] - v2[i];
     }
     return result;
+  }
+
+  private double vectorCross2D(double[] v1, double[] v2) {
+    return v1[0] * v2[1] - v1[1] * v2[0];
   }
 
   private double vectorScalar(double[] v1, double[] v2) {
