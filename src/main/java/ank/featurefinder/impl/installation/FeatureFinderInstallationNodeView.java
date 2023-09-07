@@ -30,8 +30,9 @@ public class FeatureFinderInstallationNodeView implements SwingInstallationNodeV
   private JButton createFeatureButton;
   private JButton deleteFeatureButton;
   public JButton renameFeatureButton;
-  private JTextField renameTextField = new JTextField(20);
+  public JTextField renameTextField = new JTextField(20);
   private Box defaultBox = Box.createHorizontalBox();
+  private Box licenseBox = Box.createHorizontalBox();
   public JList<String> featureFrame = new JList<String>();
 
   private Box buttonBox;
@@ -45,6 +46,8 @@ public class FeatureFinderInstallationNodeView implements SwingInstallationNodeV
   private JButton Y2DownButton = new JButton("Set Y2 Down");
 
   private JButton ProbeFeatureButton = new JButton("Probe Feature!");
+
+  private JButton LicenseSelectionButton = new JButton("Select License File");
 
   private JLabel ZUpLabel = new JLabel();
   private JLabel XUpLabel = new JLabel();
@@ -89,7 +92,27 @@ public class FeatureFinderInstallationNodeView implements SwingInstallationNodeV
     this.contribution = contribution;
     panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
     defaultBox = defaultViewBox(contribution);
+    licenseBox = licenseSelectionBox(contribution);
+
     panel.add(defaultBox);
+    panel.add(licenseBox);
+    renameTextField.setPreferredSize(new Dimension(0, 0));
+    renameTextField.setMaximumSize(renameTextField.getPreferredSize());
+
+    panel.add(renameTextField);
+  }
+
+  private Box licenseSelectionBox(final FeatureFinderInstallationNodeContribution contribution) {
+    Box containerbox = Box.createHorizontalBox();
+    containerbox.setAlignmentX(Component.LEFT_ALIGNMENT);
+    containerbox.setAlignmentY(Component.TOP_ALIGNMENT);
+    containerbox.add(new JLabel("Please select the license file you want to use:"));
+    LicenseSelectionButton.addActionListener(generalActionListener);
+    LicenseSelectionButton.setName("LicenseSelectionButton");
+    containerbox.add(Box.createRigidArea(new Dimension(10, 0)));
+    containerbox.add(LicenseSelectionButton);
+
+    return containerbox;
   }
 
   private Box defaultViewBox(final FeatureFinderInstallationNodeContribution contribution) {
@@ -146,12 +169,6 @@ public class FeatureFinderInstallationNodeView implements SwingInstallationNodeV
     Box leftLowerBox = createPoseBox(contribution);
 
     Box rightLowerBox = createSpeedsBox(contribution);
-    // containerbox.setBorder(BorderFactory.createLineBorder(Color.black, 1));
-    // upperBox.setBorder(BorderFactory.createLineBorder(Color.black, 1));
-    // midSectionBox.setBorder(BorderFactory.createLineBorder(Color.black, 1));
-    // lowerBox.setBorder(BorderFactory.createLineBorder(Color.black, 1));
-    // leftLowerBox.setBorder(BorderFactory.createLineBorder(Color.black, 1));
-    // rightLowerBox.setBorder(BorderFactory.createLineBorder(Color.black, 1));
 
     lowerBox.add(leftLowerBox);
     lowerBox.add(rightLowerBox);
@@ -306,14 +323,6 @@ public class FeatureFinderInstallationNodeView implements SwingInstallationNodeV
     Y2DownLabel.setPreferredSize(CoordinateLabelDimension);
     Y2DownLabel.setMaximumSize(CoordinateLabelDimension);
 
-    // ZUpLabel.setBorder(BorderFactory.createLineBorder(Color.black, 1));
-    // XUpLabel.setBorder(BorderFactory.createLineBorder(Color.black, 1));
-    // XDownLabel.setBorder(BorderFactory.createLineBorder(Color.black, 1));
-    // Y1UpLabel.setBorder(BorderFactory.createLineBorder(Color.black, 1));
-    // Y1DownLabel.setBorder(BorderFactory.createLineBorder(Color.black, 1));
-    // Y2UpLabel.setBorder(BorderFactory.createLineBorder(Color.black, 1));
-    // Y2DownLabel.setBorder(BorderFactory.createLineBorder(Color.black, 1));
-
     Box compartment = Box.createHorizontalBox();
     compartment.setAlignmentX(Component.LEFT_ALIGNMENT);
     compartment.setAlignmentY(Component.TOP_ALIGNMENT);
@@ -441,11 +450,6 @@ public class FeatureFinderInstallationNodeView implements SwingInstallationNodeV
     ProbeFeatureButton.addActionListener(generalActionListener);
     compartment.add(ProbeFeatureButton);
     buttonBox.add(compartment);
-
-    renameTextField.setPreferredSize(new Dimension(0, 0));
-    renameTextField.setMaximumSize(renameTextField.getPreferredSize());
-
-    buttonBox.add(renameTextField);
 
     ZUpButton.setEnabled(false);
     XUpButton.setEnabled(false);
@@ -670,7 +674,7 @@ public class FeatureFinderInstallationNodeView implements SwingInstallationNodeV
 
     DoubleProbeBox.setSelected(ProbeFeature.getDoubleProbe());
     featureFrame.repaint();
-    Color undefinedYellow =new Color(255, 255, 112);
+    Color undefinedYellow = new Color(255, 255, 112);
 
     ZUpButton.setBackground(ProbeFeature.getZUpPoseString().equals(DefaultVariables.DefaultPose) ? undefinedYellow : null);
     XUpButton.setBackground(ProbeFeature.getXUpPoseString().equals(DefaultVariables.DefaultPose) ? undefinedYellow : null);
@@ -680,9 +684,12 @@ public class FeatureFinderInstallationNodeView implements SwingInstallationNodeV
     Y2UpButton.setBackground(ProbeFeature.getY2UpPoseString().equals(DefaultVariables.DefaultPose) ? undefinedYellow : null);
     Y2DownButton.setBackground(ProbeFeature.getY2DownPoseString().equals(DefaultVariables.DefaultPose) ? undefinedYellow : null);
 
+    ProbeFeatureButton.setEnabled(ProbeFeature.isDefined() ? true : false);
+  }
 
-    ProbeFeatureButton.setEnabled(ProbeFeature.isDefined()? true : false);
-
+  public void setLicenseBoxVisible(boolean visible) {
+    licenseBox.setVisible(visible);
+    defaultBox.setVisible(!visible);
   }
 
   private class FeatureListRenderer extends DefaultListCellRenderer {
@@ -705,7 +712,7 @@ public class FeatureFinderInstallationNodeView implements SwingInstallationNodeV
           component.setBackground(new Color(255, 255, 112));
         }
       }
-      
+
       return component;
     }
   }

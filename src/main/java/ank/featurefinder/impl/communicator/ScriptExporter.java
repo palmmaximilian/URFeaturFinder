@@ -109,7 +109,6 @@ public class ScriptExporter {
     // Change to secondary program
     // command.setAsSecondaryProgram();
     command.setAsPrimaryProgram();
-
     command.appendLine("socket_open(\"" + RETURN_IP + "\"," + RETURN_PORT + "," + RETURN_SOCKETNAME + ")");
 
     command.appendLine("socket_send_string(" + variable_name + "," + RETURN_SOCKETNAME + ")");
@@ -126,17 +125,21 @@ public class ScriptExporter {
     try {
       // Create return socket
       sender.sendScriptCommand(commandWithReturn);
-
+      System.out.println("Sent command to robot.");
       Socket returnSocket = server.accept();
+      System.out.println("Connected to robot.");
+      
       BufferedReader readerFromURScript = new BufferedReader(new InputStreamReader(returnSocket.getInputStream()));
       input = readerFromURScript.readLine();
+      System.out.println("Received: " + input);
 
       // Housekeeping
       readerFromURScript.close();
       returnSocket.close();
-      server.close();
+      // server.close();
     } catch (IOException e) {
       System.out.println(e);
+      System.out.println("Could not read value from robot.");
     }
     return input;
   }

@@ -1,8 +1,5 @@
 - Move configuration to seperate screen
 
 - Add "move to point" buttons
-- add "double tap" to URScript
 
-- Check if robot is turned on before probing in installation
-- Fix socket communication issue
-- Add popups for wrong names in installation
+- See why force mode doesnt work after error

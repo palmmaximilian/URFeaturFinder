@@ -284,9 +284,9 @@ public class ProbeFeatureClass {
 
     // check if direction is odd
     if (direction % 2 == 1) {
-      directionArray[(int) Math.floor(direction / 2)] = "-1";
+      directionArray[(int) Math.floor(direction / 2)] = "0.005";
     } else {
-      directionArray[(int) Math.floor(direction / 2)] = "1";
+      directionArray[(int) Math.floor(direction / 2)] = "-0.005";
     }
     String directionString = "p[" + String.join(",", directionArray) + "]";
     return directionString;
@@ -333,7 +333,16 @@ public class ProbeFeatureClass {
     sc.appendLine("end_force_mode()");
     sc.appendLine("stopl(20)");
     if (this.doubleProbe) {
-      // TODO: Add double probe
+      sc.appendLine("newPoint=pose_add(get_actual_tcp_pose()," + this.generateDoubleProbeDirection(this.ZDirectionIndex) + ")");
+      sc.appendLine("movej(newPoint,a=" + String.valueOf(DefaultVariables.safeRapidAcc / 1000) + ",v=" + String.valueOf(DefaultVariables.safeRapidSpeed / 1000) + ")");
+      sc.appendLine("sleep(0.5)");
+      sc.appendLine("starting_pos=get_actual_tcp_pose()");
+      sc.appendLine(this.generateZForceCommand(DefaultVariables.safeProbeSpeed / 2));
+      sc.appendLine("while (force()<" + String.valueOf(this.ProbeForce - 1) + " and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
+      sc.appendLine("sleep(0.01)");
+      sc.appendLine("end");
+      sc.appendLine("end_force_mode()");
+      sc.appendLine("stopl(20)");
     }
     sc.appendLine("pose_list = str_cat(pose_list,get_actual_tcp_pose())");
     sc.appendLine("pose_list= str_cat(pose_list,\";\")");
@@ -349,7 +358,16 @@ public class ProbeFeatureClass {
     sc.appendLine("end_force_mode()");
     sc.appendLine("stopl(20)");
     if (this.doubleProbe) {
-      // TODO: Add double probe
+      sc.appendLine("newPoint=pose_add(get_actual_tcp_pose()," + this.generateDoubleProbeDirection(this.XDirectionIndex) + ")");
+      sc.appendLine("movej(newPoint,a=" + String.valueOf(DefaultVariables.safeRapidAcc / 1000) + ",v=" + String.valueOf(DefaultVariables.safeRapidSpeed / 1000) + ")");
+      sc.appendLine("sleep(0.5)");
+      sc.appendLine("starting_pos=get_actual_tcp_pose()");
+      sc.appendLine(this.generateXForceCommand(DefaultVariables.safeProbeSpeed / 2));
+      sc.appendLine("while (force()<" + String.valueOf(this.ProbeForce - 1) + " and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
+      sc.appendLine("sleep(0.01)");
+      sc.appendLine("end");
+      sc.appendLine("end_force_mode()");
+      sc.appendLine("stopl(20)");
     }
     sc.appendLine("pose_list = str_cat(pose_list,get_actual_tcp_pose())");
     sc.appendLine("pose_list= str_cat(pose_list,\";\")");
@@ -367,7 +385,16 @@ public class ProbeFeatureClass {
     sc.appendLine("end_force_mode()");
     sc.appendLine("stopl(20)");
     if (this.doubleProbe) {
-      // TODO: Add double probe
+      sc.appendLine("newPoint=pose_add(get_actual_tcp_pose()," + this.generateDoubleProbeDirection(this.YDirectionIndex) + ")");
+      sc.appendLine("movej(newPoint,a=" + String.valueOf(DefaultVariables.safeRapidAcc / 1000) + ",v=" + String.valueOf(DefaultVariables.safeRapidSpeed / 1000) + ")");
+      sc.appendLine("sleep(0.5)");
+      sc.appendLine("starting_pos=get_actual_tcp_pose()");
+      sc.appendLine(this.generateYForceCommand(DefaultVariables.safeProbeSpeed / 2));
+      sc.appendLine("while (force()<" + String.valueOf(this.ProbeForce - 1) + " and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
+      sc.appendLine("sleep(0.01)");
+      sc.appendLine("end");
+      sc.appendLine("end_force_mode()");
+      sc.appendLine("stopl(20)");
     }
     sc.appendLine("pose_list = str_cat(pose_list,get_actual_tcp_pose())");
     sc.appendLine("pose_list= str_cat(pose_list,\";\")");
@@ -385,7 +412,16 @@ public class ProbeFeatureClass {
     sc.appendLine("end_force_mode()");
     sc.appendLine("stopl(20)");
     if (this.doubleProbe) {
-      // TODO: Add double probe
+      sc.appendLine("newPoint=pose_add(get_actual_tcp_pose()," + this.generateDoubleProbeDirection(this.YDirectionIndex) + ")");
+      sc.appendLine("movej(newPoint,a=" + String.valueOf(DefaultVariables.safeRapidAcc / 1000) + ",v=" + String.valueOf(DefaultVariables.safeRapidSpeed / 1000) + ")");
+      sc.appendLine("sleep(0.5)");
+      sc.appendLine("starting_pos=get_actual_tcp_pose()");
+      sc.appendLine(this.generateYForceCommand(DefaultVariables.safeProbeSpeed / 2));
+      sc.appendLine("while (force()<" + String.valueOf(this.ProbeForce - 1) + " and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
+      sc.appendLine("sleep(0.01)");
+      sc.appendLine("end");
+      sc.appendLine("end_force_mode()");
+      sc.appendLine("stopl(20)");
     }
     sc.appendLine("pose_list = str_cat(pose_list,get_actual_tcp_pose())");
     sc.appendLine("movel(" + this.getY2DownPoseString() + ",a=" + String.valueOf(DefaultVariables.safeRapidAcc / 1000) + ",v=" + String.valueOf(DefaultVariables.safeRapidSpeed / 1000) + ")");

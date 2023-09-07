@@ -50,6 +50,11 @@ public class ProbeFeatureProgramNodeContribution implements ProgramNodeContribut
   public boolean isDefined() {
     String featureName = model.get("Feature", "None");
 
+    if(!getInstallationNode().isLicenseValid())
+    {
+      return false;
+    }
+
     if (featureName.equals("None")) {
       return false;
     }

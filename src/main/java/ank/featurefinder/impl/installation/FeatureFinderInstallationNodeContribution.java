@@ -1,5 +1,6 @@
 package ank.featurefinder.impl.installation;
 
+import ank.featurefinder.DefaultVariables;
 import ank.featurefinder.impl.ProbeFeatureClass;
 import ank.featurefinder.impl.communicator.ScriptCommand;
 import ank.featurefinder.impl.communicator.ScriptExporter;
@@ -17,16 +18,30 @@ import com.ur.urcap.api.domain.userinteraction.keyboard.KeyboardInputCallback;
 import com.ur.urcap.api.domain.userinteraction.keyboard.KeyboardInputFactory;
 import com.ur.urcap.api.domain.userinteraction.keyboard.KeyboardNumberInput;
 import com.ur.urcap.api.domain.userinteraction.keyboard.KeyboardTextInput;
+import com.ur.urcap.api.domain.userinteraction.robot.movement.MovementCompleteEvent;
+import com.ur.urcap.api.domain.userinteraction.robot.movement.MovementErrorEvent;
+import com.ur.urcap.api.domain.userinteraction.robot.movement.RobotMovement;
+import com.ur.urcap.api.domain.userinteraction.robot.movement.RobotMovementCallback;
 import com.ur.urcap.api.domain.value.Pose;
 import com.ur.urcap.api.domain.value.PoseFactory;
 import com.ur.urcap.api.domain.value.robotposition.PositionParameters;
 import com.ur.urcap.api.domain.value.simple.Angle;
 import com.ur.urcap.api.domain.value.simple.Length;
 import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.event.ListSelectionEvent;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class FeatureFinderInstallationNodeContribution implements InstallationNodeContribution {
 
@@ -41,6 +56,9 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
   private Pose zeroPose;
   private UserInterfaceAPI uiapi;
   private FunctionModel functionModel;
+  private final RobotMovement robotMovement;
+  private RobotRealtimeReader robotRealtimeReader = new RobotRealtimeReader();
+  private InstallationAPIProvider apiProvider;
 
   private ScriptExporter exporter = new ScriptExporter();
 
@@ -48,10 +66,11 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     this.uiapi = apiProvider.getUserInterfaceAPI();
     this.model = model;
     this.view = view;
+    this.apiProvider = apiProvider;
     this.keyboardInputFactory = apiProvider.getUserInterfaceAPI().getUserInteraction().getKeyboardInputFactory();
     this.validatorFactory = apiProvider.getUserInterfaceAPI().getUserInteraction().getInputValidationFactory();
     featureContributionModel = apiProvider.getInstallationAPI().getFeatureContributionModel();
-
+    this.robotMovement = apiProvider.getUserInterfaceAPI().getUserInteraction().getRobotMovement();
     this.poseFactory = apiProvider.getInstallationAPI().getValueFactoryProvider().getPoseFactory();
     this.functionModel = apiProvider.getInstallationAPI().getFunctionModel();
 
@@ -75,6 +94,8 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
       view.setFeatureListIndex(0);
       view.enableButtons();
     }
+
+    view.setLicenseBoxVisible(!isLicenseValid());
   }
 
   @Override
@@ -133,7 +154,7 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     writer.appendLine("end");
   }
 
-  void listItemClicked(ListSelectionEvent e) {
+  public void listItemClicked(ListSelectionEvent e) {
     int index = view.featureFrame.getSelectedIndex();
     // String item = view.featureFrame.getSelectedValue();
     // System.out.println("Item at index " + index + " selected: " + item);
@@ -190,6 +211,20 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
         ProbingThread newProbingThread = new ProbingThread();
         newProbingThread.start();
         // System.out.println("ProbeFeatureButton pressed");
+      } else if (name.equals("LicenseSelectionButton")) {
+        // ask user to select a file
+        JFileChooser fileChooser = new JFileChooser();
+        // Create a file filter for specific file endings (e.g., ".txt" files)
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Text Files", "txt");
+        fileChooser.setFileFilter(filter);
+        fileChooser.setCurrentDirectory(new File("/programs"));
+        int result = fileChooser.showOpenDialog(view.renameTextField);
+        if (result == JFileChooser.APPROVE_OPTION) {
+          File selectedFile = fileChooser.getSelectedFile();
+          System.out.println("Selected file: " + selectedFile.getAbsolutePath());
+          model.set("LicensePath", selectedFile.getAbsolutePath());
+          view.setLicenseBoxVisible(!isLicenseValid());
+        }
       }
     } else if (e.getSource() instanceof JComboBox) {
       JComboBox<?> box = (JComboBox<?>) e.getSource();
@@ -446,6 +481,8 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     String regex = "[a-zA-Z][a-zA-Z0-9_]{0,14}";
     if (!newName.matches(regex)) {
       System.out.println("Invalid name");
+      ScriptSender sc = new ScriptSender();
+      sc.sendDashboardPopup("Name must: start with a letter, contain only letters, numbers and underscore. Maximum 15 characters");
       return;
     }
     String[] FeatureList = model.get("FeatureList", (String[]) null);
@@ -563,6 +600,19 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     };
   }
 
+  public void moveRobot(Pose poseToMove) {
+    robotMovement.requestUserToMoveRobot(
+      poseToMove,
+      new RobotMovementCallback() {
+        @Override
+        public void onComplete(MovementCompleteEvent event) {}
+
+        @Override
+        public void onError(MovementErrorEvent event) {}
+      }
+    );
+  }
+
   public int getFeatureCount() {
     String[] FeatureList = model.get("FeatureList", (String[]) null);
     int ListLength = 0;
@@ -589,7 +639,16 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     public void run() {
       while (running) {
         this.stopThread();
-        ProbeFeature();
+        robotRealtimeReader.readNow();
+        double robotMode = robotRealtimeReader.getRobotMode();
+        System.out.println("Robotmode: " + robotMode);
+        if (Math.round(robotMode) == 7) {
+          ProbeFeature();
+        } else {
+          System.out.println("robot not turned on");
+          ScriptSender scriptSender = new ScriptSender();
+          scriptSender.sendDashboardPopup("Please power on the Robot first");
+        }
         if (!running) {
           break; // Exit the loop and stop the thread
         }
@@ -606,6 +665,7 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
 
     // ScriptCommand sc = new ScriptCommand("ProbeFeature");
     ScriptCommand sc = probeFeatureObject.generateScriptCommand();
+    System.out.println("right before sending command");
     String Pose_list = exporter.exportStringFromURScript(sc, "pose_list");
 
     System.out.println("right after sending command");
@@ -675,37 +735,38 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
 
     ScriptSender scriptSender = new ScriptSender();
 
-    double method = 0;
+    // double method = 0;
 
-    if (method == 0) {
-      // Jess approach
-      double[] v1 = { 1, 0 };
-      double p2[] = { Y2ProbePoint[0], Y2ProbePoint[1] };
-      double p1[] = { Y1ProbePoint[0], Y1ProbePoint[1] };
+    // if (method == 0) {
+    // Jess approach
+    double[] v1 = { 1, 0 };
+    double p2[] = { Y2ProbePoint[0], Y2ProbePoint[1] };
+    double p1[] = { Y1ProbePoint[0], Y1ProbePoint[1] };
 
-      double Cos = vectorScalar(v1, vectorSub(p2, p1)) / (vectorNorm(v1) * vectorNorm(vectorSub(p2, p1)));
-      double det = vectorCross2D(v1, vectorSub(p2, p1));
+    double Cos = vectorScalar(v1, vectorSub(p2, p1)) / (vectorNorm(v1) * vectorNorm(vectorSub(p2, p1)));
+    double det = vectorCross2D(v1, vectorSub(p2, p1));
 
-      if (det > 0) {
-        angle = Math.acos(Cos);
-      } else {
-        angle = 2 * Math.PI - Math.acos(Cos);
-      }
+    if (det > 0) {
+      angle = Math.acos(Cos);
+    } else {
+      angle = 2 * Math.PI - Math.acos(Cos);
     }
+    angle = angle - Math.PI / 2;
+    // }
 
-    if (method == 1) {
-      // Max approach
-      angle = Math.atan(mY / 1);
-      angle = Math.toDegrees(angle);
+    // if (method == 1) {
+    //   // Max approach
+    //   angle = Math.atan(mY / 1);
+    //   angle = Math.toDegrees(angle);
 
-      if (Y2ProbePoint[0] < Y1ProbePoint[0]) {
-        angle = 90 + angle;
-      } else if (Y2ProbePoint[0] > Y1ProbePoint[0]) {
-        angle = -90 + angle;
-      }
+    //   if (Y2ProbePoint[0] < Y1ProbePoint[0]) {
+    //     angle = 90 + angle;
+    //   } else if (Y2ProbePoint[0] > Y1ProbePoint[0]) {
+    //     angle = -90 + angle;
+    //   }
 
-      angle = Math.toRadians(angle);
-    }
+    //   angle = Math.toRadians(angle);
+    // }
 
     Pose origin = poseFactory.createPose(x0, y0, z0, 0, 0, angle, Length.Unit.M, Angle.Unit.RAD);
 
@@ -715,6 +776,57 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     scriptSender.sendLogMsg("angle: " + Math.toDegrees(angle));
 
     return origin;
+  }
+
+  public boolean isLicenseValid() {
+    if (model.get("LicensePath", (String) null) == null) {
+      System.out.println("LicensePath is null");
+      return false;
+    } else {
+      String licensePath = model.get("LicensePath", (String) null);
+      // read text file and save in String license
+      String license = "";
+      try {
+        license = new String(Files.readAllBytes(Paths.get(licensePath)));
+
+        System.out.println("LicensePath: " + licensePath);
+        System.out.println("License: " + license);
+        System.out.println("Expected License: " + getLicenseHash());
+        if (license.equals(getLicenseHash())) {
+          System.out.println("License is valid");
+          return true;
+        } else {
+          System.out.println("License is invalid");
+          return false;
+        }
+      } catch (IOException e) {
+        System.out.println("Exception: " + e);
+        return false;
+      }
+    }
+  }
+
+  private String getLicenseHash() {
+    String serialnumber = apiProvider.getSystemAPI().getRobotModel().getSerialNumber();
+    System.out.println("Serialnumber: " + serialnumber);
+    try {
+      // Create a SHA-256 hash of the data
+
+      // Create a JSON string with the robot serial number and secret
+      String licenseDataJson = "{\"robot_serial_number\": \"" + serialnumber + "\", \"secret\": \"" + DefaultVariables.secret + "\"}";
+      System.out.println("licenseDataJson: " + licenseDataJson);
+      // Create a SHA-256 hash of the JSON data
+      MessageDigest digest = MessageDigest.getInstance("SHA-256");
+      byte[] hashBytes = digest.digest(licenseDataJson.getBytes(StandardCharsets.UTF_8));
+
+      // Encode the hash bytes as a base64 string
+      String expectedLicenseKey = Base64.getEncoder().encodeToString(hashBytes);
+
+      return expectedLicenseKey;
+    } catch (NoSuchAlgorithmException e) {
+      e.printStackTrace();
+      return null;
+    }
   }
 
   private double[] vectorSub(double[] v1, double[] v2) {

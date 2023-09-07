@@ -13,13 +13,15 @@ public abstract class DefaultVariables {
 
   public static double safeProbeSpeed=20;
   public static double safeRapidSpeed= 250;
-  public static double safeRapidAcc = 800;
+  public static double safeRapidAcc = 1200;
 
   public static int DefaultZDirectionIndex=5;
   public static int DefaultXDirectionIndex=3;
   public static int DefaultYDirectionIndex=0;
 
   public static boolean DefaultDoubleProbe=false;
+
+  public static String secret = "5dY2m&ktJ]09I=8/[(uZ~4'G0}_D9Q1Q";
 
 
 

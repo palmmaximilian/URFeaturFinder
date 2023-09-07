@@ -1,6 +1,7 @@
 /home/mp/URCAP/ank.featurefinder/src/main/java/ank/featurefinder/impl/communicator/ScriptTypeConverter.java
 /home/mp/URCAP/ank.featurefinder/src/main/java/ank/featurefinder/impl/installation/RobotRealtimeReader.java
 /home/mp/URCAP/ank.featurefinder/src/main/java/ank/featurefinder/impl/RobotRealtimeReader.java
+/home/mp/URCAP/ank.featurefinder/src/main/java/ank/featurefinder/impl/communicator/RobotRealtimeReader.java
 /home/mp/URCAP/ank.featurefinder/src/main/java/ank/featurefinder/impl/communicator/ScriptCommand.java
 /home/mp/URCAP/ank.featurefinder/src/main/java/ank/featurefinder/impl/communicator/ScriptSender.java
 /home/mp/URCAP/ank.featurefinder/src/main/java/ank/featurefinder/impl/probeFeature/ProbeFeatureProgramNodeContribution.java
