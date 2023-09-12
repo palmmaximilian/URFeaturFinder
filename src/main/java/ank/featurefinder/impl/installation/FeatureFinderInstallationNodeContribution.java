@@ -211,18 +211,48 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
         ProbingThread newProbingThread = new ProbingThread();
         newProbingThread.start();
         // System.out.println("ProbeFeatureButton pressed");
+      } else if (name.equals("ZUpMoveToButton")) {
+        moveRobot(1);
+      } else if (name.equals("XUpMoveToButton")) {
+        moveRobot(2);
+      } else if (name.equals("XDownMoveToButton")) {
+        moveRobot(3);
+      } else if (name.equals("Y1UpMoveToButton")) {
+        moveRobot(4);
+      } else if (name.equals("Y1DownMoveToButton")) {
+        moveRobot(5);
+      } else if (name.equals("Y2UpMoveToButton")) {
+        moveRobot(6);
+      } else if (name.equals("Y2DownMoveToButton")) {
+        moveRobot(7);
       } else if (name.equals("LicenseSelectionButton")) {
+
         // ask user to select a file
         JFileChooser fileChooser = new JFileChooser();
         // Create a file filter for specific file endings (e.g., ".txt" files)
-        FileNameExtensionFilter filter = new FileNameExtensionFilter("Text Files", "txt");
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("License Files", "lic");
         fileChooser.setFileFilter(filter);
         fileChooser.setCurrentDirectory(new File("/programs"));
         int result = fileChooser.showOpenDialog(view.renameTextField);
         if (result == JFileChooser.APPROVE_OPTION) {
           File selectedFile = fileChooser.getSelectedFile();
-          System.out.println("Selected file: " + selectedFile.getAbsolutePath());
           model.set("LicensePath", selectedFile.getAbsolutePath());
+          if(isLicenseValid()){
+            // copy the license file to the current folder
+            try {
+              // check if file already exists and delete it
+              File file = new File("/data/root/.urcaps/FeatureFinderLicense.lic");
+              if (file.exists()) {
+                file.delete();
+              }
+              Files.copy(Paths.get(selectedFile.getAbsolutePath()), Paths.get("/data/root/.urcaps/FeatureFinderLicense.lic"));
+              model.set("LicensePath", "/data/root/.urcaps/FeatureFinderLicense.lic");
+            } catch (IOException e1) {
+              e1.printStackTrace();
+            }
+          } else {
+            view.setLicenseBoxVisible(true);
+          }
           view.setLicenseBoxVisible(!isLicenseValid());
         }
       }
@@ -600,7 +630,44 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     };
   }
 
-  public void moveRobot(Pose poseToMove) {
+  public void moveRobot(int id) {
+    final String[] ProbeFeatureList = model.get("ProbeFeatureList", (String[]) null);
+    if (ProbeFeatureList == null) {
+      System.out.println("ProbeFeatureList is still empty, something went wrong");
+      return;
+    }
+
+    // get the selected feature
+    final int selectedFeature = view.getFeatureListIndex();
+
+    final ProbeFeatureClass currentProbeFeature = new ProbeFeatureClass(ProbeFeatureList[selectedFeature]);
+
+    double[] poseList = new double[6];
+    switch (id) {
+      case 1:
+        poseList = currentProbeFeature.poseStringToList(currentProbeFeature.getZUpPoseString());
+        break;
+      case 2:
+        poseList = currentProbeFeature.poseStringToList(currentProbeFeature.getXUpPoseString());
+        break;
+      case 3:
+        poseList = currentProbeFeature.poseStringToList(currentProbeFeature.getXDownPoseString());
+        break;
+      case 4:
+        poseList = currentProbeFeature.poseStringToList(currentProbeFeature.getY1UpPoseString());
+        break;
+      case 5:
+        poseList = currentProbeFeature.poseStringToList(currentProbeFeature.getY1DownPoseString());
+        break;
+      case 6:
+        poseList = currentProbeFeature.poseStringToList(currentProbeFeature.getY2UpPoseString());
+        break;
+      case 7:
+        poseList = currentProbeFeature.poseStringToList(currentProbeFeature.getY2DownPoseString());
+        break;
+    }
+    Pose poseToMove = poseFactory.createPose(poseList[0], poseList[1], poseList[2], poseList[3], poseList[4], poseList[5], Length.Unit.M, Angle.Unit.RAD);
+
     robotMovement.requestUserToMoveRobot(
       poseToMove,
       new RobotMovementCallback() {
@@ -735,10 +802,7 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
 
     ScriptSender scriptSender = new ScriptSender();
 
-    // double method = 0;
 
-    // if (method == 0) {
-    // Jess approach
     double[] v1 = { 1, 0 };
     double p2[] = { Y2ProbePoint[0], Y2ProbePoint[1] };
     double p1[] = { Y1ProbePoint[0], Y1ProbePoint[1] };
@@ -752,21 +816,7 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
       angle = 2 * Math.PI - Math.acos(Cos);
     }
     angle = angle - Math.PI / 2;
-    // }
 
-    // if (method == 1) {
-    //   // Max approach
-    //   angle = Math.atan(mY / 1);
-    //   angle = Math.toDegrees(angle);
-
-    //   if (Y2ProbePoint[0] < Y1ProbePoint[0]) {
-    //     angle = 90 + angle;
-    //   } else if (Y2ProbePoint[0] > Y1ProbePoint[0]) {
-    //     angle = -90 + angle;
-    //   }
-
-    //   angle = Math.toRadians(angle);
-    // }
 
     Pose origin = poseFactory.createPose(x0, y0, z0, 0, 0, angle, Length.Unit.M, Angle.Unit.RAD);
 
@@ -779,42 +829,35 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
   }
 
   public boolean isLicenseValid() {
-    if (model.get("LicensePath", (String) null) == null) {
-      System.out.println("LicensePath is null");
-      return false;
-    } else {
-      String licensePath = model.get("LicensePath", (String) null);
+    
+      String licensePath = model.get("LicensePath", "/data/root/.urcaps/FeatureFinderLicense.lic");
+
       // read text file and save in String license
       String license = "";
       try {
         license = new String(Files.readAllBytes(Paths.get(licensePath)));
 
-        System.out.println("LicensePath: " + licensePath);
-        System.out.println("License: " + license);
-        System.out.println("Expected License: " + getLicenseHash());
         if (license.equals(getLicenseHash())) {
-          System.out.println("License is valid");
           return true;
         } else {
-          System.out.println("License is invalid");
           return false;
         }
       } catch (IOException e) {
         System.out.println("Exception: " + e);
         return false;
       }
-    }
+    
   }
 
   private String getLicenseHash() {
     String serialnumber = apiProvider.getSystemAPI().getRobotModel().getSerialNumber();
-    System.out.println("Serialnumber: " + serialnumber);
+    // System.out.println("Serialnumber: " + serialnumber);
     try {
       // Create a SHA-256 hash of the data
 
       // Create a JSON string with the robot serial number and secret
       String licenseDataJson = "{\"robot_serial_number\": \"" + serialnumber + "\", \"secret\": \"" + DefaultVariables.secret + "\"}";
-      System.out.println("licenseDataJson: " + licenseDataJson);
+      // System.out.println("licenseDataJson: " + licenseDataJson);
       // Create a SHA-256 hash of the JSON data
       MessageDigest digest = MessageDigest.getInstance("SHA-256");
       byte[] hashBytes = digest.digest(licenseDataJson.getBytes(StandardCharsets.UTF_8));

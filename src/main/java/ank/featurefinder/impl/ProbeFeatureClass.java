@@ -155,6 +155,17 @@ public class ProbeFeatureClass {
     return Y2DownPose;
   }
 
+
+  public double[] poseStringToList(String poseString)
+  {
+    String[] poseArray = poseString.substring(2, poseString.length() - 1).split(",");
+    double[] poseList = new double[6];
+    for (int i = 0; i < 6; i++) {
+      poseList[i] = Double.parseDouble(poseArray[i]);
+    }
+    return poseList;
+  }
+
   private String generateWrenchString(int index, int force) {
     // System.out.println("generateWrenchString: " + index + " " + force);
     String[] directionArray = { "0", "0", "0", "0", "0", "0" };
@@ -557,6 +568,7 @@ public class ProbeFeatureClass {
       scriptWriter.appendLine("else:");
       scriptWriter.appendLine("angle = 2 * 3.14159265359 - acos(Cos)");
       scriptWriter.appendLine("end");
+      scriptWriter.appendLine("angle=angle-d2r(90)");
       scriptWriter.appendLine(featureName + " = p[x0, y0, z0, 0, 0, angle]");
     }
 

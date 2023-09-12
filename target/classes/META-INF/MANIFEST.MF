@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Bnd-LastModified: 1694081340566
+Bnd-LastModified: 1694527753123
 Build-Jdk: 11.0.18
 Built-By: root
 Bundle-Activator: ank.featurefinder.impl.Activator
@@ -32,8 +32,8 @@ Import-Package: com.ur.urcap.api.contribution;version="[1.9,2)",com.ur.u
  om.ur.urcap.api.domain.value;version="[1.9,2)",com.ur.urcap.api.domain.
  value.robotposition;version="[1.9,2)",com.ur.urcap.api.domain.value.sim
  ple;version="[1.9,2)",ank.featurefinder;version="[1.0,2)",javax.swing,j
- avax.swing.event,javax.swing.filechooser,org.osgi.framework;version="[1
- .6,2)"
+ avax.swing.border,javax.swing.event,javax.swing.filechooser,org.osgi.fr
+ amework;version="[1.6,2)"
 Tool: Bnd-2.1.0.20130426-122213
 URCapCompatibility-CB3: false
 URCapCompatibility-eSeries: true
