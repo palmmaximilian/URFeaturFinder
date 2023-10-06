@@ -7,6 +7,7 @@ import com.ur.urcap.api.domain.value.Pose;
 
 public class ProbeFeatureClass {
 
+
   private String ZUpPose;
   private String XUpPose;
   private String XDownPose;
@@ -155,9 +156,7 @@ public class ProbeFeatureClass {
     return Y2DownPose;
   }
 
-
-  public double[] poseStringToList(String poseString)
-  {
+  public double[] poseStringToList(String poseString) {
     String[] poseArray = poseString.substring(2, poseString.length() - 1).split(",");
     double[] poseList = new double[6];
     for (int i = 0; i < 6; i++) {
@@ -333,20 +332,30 @@ public class ProbeFeatureClass {
 
   public ScriptCommand generateScriptCommand() {
     ScriptCommand sc = new ScriptCommand("ProbeFeature");
+    sc.appendLine("textmsg(\"Probe Force: " + String.valueOf(this.ProbeForce) + "\")");
+    sc.appendLine("startPoint=get_actual_tcp_pose()");
+    sc.appendLine("movej(startPoint)");
     sc.appendLine("pose_list=\"\"");
     sc.appendLine("movej(" + this.getZUpPoseString() + ",a=" + String.valueOf(DefaultVariables.safeRapidAcc / 1000) + ",v=" + String.valueOf(DefaultVariables.safeRapidSpeed / 1000) + ")");
     sc.appendLine("sleep(0.5)");
+    sc.appendLine("zero_ftsensor()");
     sc.appendLine("starting_pos=get_actual_tcp_pose()");
     sc.appendLine(this.generateZForceCommand(DefaultVariables.safeProbeSpeed));
+    sc.appendLine("textmsg(str_cat(\"Starting Force:\",to_str(force())))");
+    sc.appendLine("currentFrc=force()");
     sc.appendLine("while (force()<" + String.valueOf(this.ProbeForce - 1) + " and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
     sc.appendLine("sleep(0.01)");
+    sc.appendLine("currentFrc=force()");
     sc.appendLine("end");
     sc.appendLine("end_force_mode()");
     sc.appendLine("stopl(20)");
+    sc.appendLine("textmsg(str_cat(\"Final Force:\",to_str(currentFrc)))");
+    sc.appendLine("textmsg(str_cat(\"Distance:\",to_str(point_dist(get_actual_tcp_pose(),starting_pos))))");
     if (this.doubleProbe) {
       sc.appendLine("newPoint=pose_add(get_actual_tcp_pose()," + this.generateDoubleProbeDirection(this.ZDirectionIndex) + ")");
       sc.appendLine("movej(newPoint,a=" + String.valueOf(DefaultVariables.safeRapidAcc / 1000) + ",v=" + String.valueOf(DefaultVariables.safeRapidSpeed / 1000) + ")");
       sc.appendLine("sleep(0.5)");
+      sc.appendLine("zero_ftsensor()");
       sc.appendLine("starting_pos=get_actual_tcp_pose()");
       sc.appendLine(this.generateZForceCommand(DefaultVariables.safeProbeSpeed / 2));
       sc.appendLine("while (force()<" + String.valueOf(this.ProbeForce - 1) + " and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
@@ -361,6 +370,7 @@ public class ProbeFeatureClass {
     sc.appendLine("movel(" + this.getXUpPoseString() + ",a=" + String.valueOf(DefaultVariables.safeRapidAcc / 1000) + ",v=" + String.valueOf(DefaultVariables.safeRapidSpeed / 1000) + ")");
     sc.appendLine("movel(" + this.getXDownPoseString() + ",a=" + String.valueOf(DefaultVariables.safeRapidAcc / 1000) + ",v=" + String.valueOf(DefaultVariables.safeRapidSpeed / 1000) + ")");
     sc.appendLine("sleep(0.5)");
+    sc.appendLine("zero_ftsensor()");
     sc.appendLine("starting_pos=get_actual_tcp_pose()");
     sc.appendLine(this.generateXForceCommand(DefaultVariables.safeProbeSpeed));
     sc.appendLine("while (force()<" + String.valueOf(this.ProbeForce - 1) + " and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
@@ -372,6 +382,7 @@ public class ProbeFeatureClass {
       sc.appendLine("newPoint=pose_add(get_actual_tcp_pose()," + this.generateDoubleProbeDirection(this.XDirectionIndex) + ")");
       sc.appendLine("movej(newPoint,a=" + String.valueOf(DefaultVariables.safeRapidAcc / 1000) + ",v=" + String.valueOf(DefaultVariables.safeRapidSpeed / 1000) + ")");
       sc.appendLine("sleep(0.5)");
+      sc.appendLine("zero_ftsensor()");
       sc.appendLine("starting_pos=get_actual_tcp_pose()");
       sc.appendLine(this.generateXForceCommand(DefaultVariables.safeProbeSpeed / 2));
       sc.appendLine("while (force()<" + String.valueOf(this.ProbeForce - 1) + " and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
@@ -388,6 +399,7 @@ public class ProbeFeatureClass {
     sc.appendLine("movel(" + this.getY1UpPoseString() + ",a=" + String.valueOf(DefaultVariables.safeRapidAcc / 1000) + ",v=" + String.valueOf(DefaultVariables.safeRapidSpeed / 1000) + ")");
     sc.appendLine("movel(" + this.getY1DownPoseString() + ",a=" + String.valueOf(DefaultVariables.safeRapidAcc / 1000) + ",v=" + String.valueOf(DefaultVariables.safeRapidSpeed / 1000) + ")");
     sc.appendLine("sleep(0.5)");
+    sc.appendLine("zero_ftsensor()");
     sc.appendLine("starting_pos=get_actual_tcp_pose()");
     sc.appendLine(this.generateYForceCommand(DefaultVariables.safeProbeSpeed));
     sc.appendLine("while (force()<" + String.valueOf(this.ProbeForce - 1) + " and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
@@ -399,6 +411,7 @@ public class ProbeFeatureClass {
       sc.appendLine("newPoint=pose_add(get_actual_tcp_pose()," + this.generateDoubleProbeDirection(this.YDirectionIndex) + ")");
       sc.appendLine("movej(newPoint,a=" + String.valueOf(DefaultVariables.safeRapidAcc / 1000) + ",v=" + String.valueOf(DefaultVariables.safeRapidSpeed / 1000) + ")");
       sc.appendLine("sleep(0.5)");
+      sc.appendLine("zero_ftsensor()");
       sc.appendLine("starting_pos=get_actual_tcp_pose()");
       sc.appendLine(this.generateYForceCommand(DefaultVariables.safeProbeSpeed / 2));
       sc.appendLine("while (force()<" + String.valueOf(this.ProbeForce - 1) + " and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
@@ -415,6 +428,7 @@ public class ProbeFeatureClass {
     sc.appendLine("movel(" + this.getY2UpPoseString() + ",a=" + String.valueOf(DefaultVariables.safeRapidAcc / 1000) + ",v=" + String.valueOf(DefaultVariables.safeRapidSpeed / 1000) + ")");
     sc.appendLine("movel(" + this.getY2DownPoseString() + ",a=" + String.valueOf(DefaultVariables.safeRapidAcc / 1000) + ",v=" + String.valueOf(DefaultVariables.safeRapidSpeed / 1000) + ")");
     sc.appendLine("sleep(0.5)");
+    sc.appendLine("zero_ftsensor()");
     sc.appendLine("starting_pos=get_actual_tcp_pose()");
     sc.appendLine(this.generateYForceCommand(DefaultVariables.safeProbeSpeed));
     sc.appendLine("while (force()<" + String.valueOf(this.ProbeForce - 1) + " and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
@@ -426,6 +440,7 @@ public class ProbeFeatureClass {
       sc.appendLine("newPoint=pose_add(get_actual_tcp_pose()," + this.generateDoubleProbeDirection(this.YDirectionIndex) + ")");
       sc.appendLine("movej(newPoint,a=" + String.valueOf(DefaultVariables.safeRapidAcc / 1000) + ",v=" + String.valueOf(DefaultVariables.safeRapidSpeed / 1000) + ")");
       sc.appendLine("sleep(0.5)");
+      sc.appendLine("zero_ftsensor()");
       sc.appendLine("starting_pos=get_actual_tcp_pose()");
       sc.appendLine(this.generateYForceCommand(DefaultVariables.safeProbeSpeed / 2));
       sc.appendLine("while (force()<" + String.valueOf(this.ProbeForce - 1) + " and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
@@ -445,6 +460,7 @@ public class ProbeFeatureClass {
     // scriptWriter.appendLine("movej(" + this.getZUpPoseString() + ")");
     scriptWriter.appendLine("movej(" + this.getZUpPoseString() + ",a=" + String.valueOf(RapidAcceleration / 1000) + ",v=" + String.valueOf(RapidSpeed / 1000) + ")");
     scriptWriter.appendLine("sleep(0.5)");
+    scriptWriter.appendLine("zero_ftsensor()");
     scriptWriter.appendLine("starting_pos=get_actual_tcp_pose()");
     scriptWriter.appendLine(this.generateZForceCommand(this.ProbeSpeed));
     scriptWriter.appendLine("while (force()<" + String.valueOf(this.ProbeForce - 1) + " and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
@@ -456,6 +472,7 @@ public class ProbeFeatureClass {
       scriptWriter.appendLine("newPoint=pose_add(get_actual_tcp_pose()," + this.generateDoubleProbeDirection(this.ZDirectionIndex) + ")");
       scriptWriter.appendLine("movej(newPoint,a=" + String.valueOf(RapidAcceleration / 1000) + ",v=" + String.valueOf(RapidSpeed / 1000) + ")");
       scriptWriter.appendLine("sleep(0.5)");
+      scriptWriter.appendLine("zero_ftsensor()");
       scriptWriter.appendLine("starting_pos=get_actual_tcp_pose()");
       scriptWriter.appendLine(this.generateZForceCommand(this.ProbeSpeed / 2));
       scriptWriter.appendLine("while (force()<" + String.valueOf(this.ProbeForce - 1) + " and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
@@ -469,6 +486,7 @@ public class ProbeFeatureClass {
     scriptWriter.appendLine("movel(" + this.getXUpPoseString() + ",a=" + String.valueOf(RapidAcceleration / 1000) + ",v=" + String.valueOf(RapidSpeed / 1000) + ")");
     scriptWriter.appendLine("movel(" + this.getXDownPoseString() + ",a=" + String.valueOf(RapidAcceleration / 1000) + ",v=" + String.valueOf(RapidSpeed / 1000) + ")");
     scriptWriter.appendLine("sleep(0.5)");
+    scriptWriter.appendLine("zero_ftsensor()");
     scriptWriter.appendLine("starting_pos=get_actual_tcp_pose()");
     scriptWriter.appendLine(this.generateXForceCommand(this.ProbeSpeed));
     scriptWriter.appendLine("while (force()<" + String.valueOf(this.ProbeForce - 1) + " and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
@@ -480,6 +498,7 @@ public class ProbeFeatureClass {
       scriptWriter.appendLine("newPoint=pose_add(get_actual_tcp_pose()," + this.generateDoubleProbeDirection(this.XDirectionIndex) + ")");
       scriptWriter.appendLine("movej(newPoint,a=" + String.valueOf(RapidAcceleration / 1000) + ",v=" + String.valueOf(RapidSpeed / 1000) + ")");
       scriptWriter.appendLine("sleep(0.5)");
+      scriptWriter.appendLine("zero_ftsensor()");
       scriptWriter.appendLine("starting_pos=get_actual_tcp_pose()");
       scriptWriter.appendLine(this.generateXForceCommand(this.ProbeSpeed / 2));
       scriptWriter.appendLine("while (force()<" + String.valueOf(this.ProbeForce - 1) + " and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
@@ -495,6 +514,7 @@ public class ProbeFeatureClass {
     scriptWriter.appendLine("movel(" + this.getY1UpPoseString() + ",a=" + String.valueOf(RapidAcceleration / 1000) + ",v=" + String.valueOf(RapidSpeed / 1000) + ")");
     scriptWriter.appendLine("movel(" + this.getY1DownPoseString() + ",a=" + String.valueOf(RapidAcceleration / 1000) + ",v=" + String.valueOf(RapidSpeed / 1000) + ")");
     scriptWriter.appendLine("sleep(0.5)");
+    scriptWriter.appendLine("zero_ftsensor()");
     scriptWriter.appendLine("starting_pos=get_actual_tcp_pose()");
     scriptWriter.appendLine(this.generateYForceCommand(this.ProbeSpeed));
     scriptWriter.appendLine("while (force()<" + String.valueOf(this.ProbeForce - 1) + " and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
@@ -506,6 +526,7 @@ public class ProbeFeatureClass {
       scriptWriter.appendLine("newPoint=pose_add(get_actual_tcp_pose()," + this.generateDoubleProbeDirection(this.YDirectionIndex) + ")");
       scriptWriter.appendLine("movej(newPoint,a=" + String.valueOf(RapidAcceleration / 1000) + ",v=" + String.valueOf(RapidSpeed / 1000) + ")");
       scriptWriter.appendLine("sleep(0.5)");
+      scriptWriter.appendLine("zero_ftsensor()");
       scriptWriter.appendLine("starting_pos=get_actual_tcp_pose()");
       scriptWriter.appendLine(this.generateYForceCommand(this.ProbeSpeed / 2));
       scriptWriter.appendLine("while (force()<" + String.valueOf(this.ProbeForce - 1) + " and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
@@ -521,6 +542,7 @@ public class ProbeFeatureClass {
     scriptWriter.appendLine("movel(" + this.getY2UpPoseString() + ",a=" + String.valueOf(RapidAcceleration / 1000) + ",v=" + String.valueOf(RapidSpeed / 1000) + ")");
     scriptWriter.appendLine("movel(" + this.getY2DownPoseString() + ",a=" + String.valueOf(RapidAcceleration / 1000) + ",v=" + String.valueOf(RapidSpeed / 1000) + ")");
     scriptWriter.appendLine("sleep(0.5)");
+      scriptWriter.appendLine("zero_ftsensor()");
     scriptWriter.appendLine("starting_pos=get_actual_tcp_pose()");
     scriptWriter.appendLine(this.generateYForceCommand(this.ProbeSpeed));
     scriptWriter.appendLine("while (force()<" + String.valueOf(this.ProbeForce - 1) + " and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
@@ -532,6 +554,7 @@ public class ProbeFeatureClass {
       scriptWriter.appendLine("newPoint=pose_add(get_actual_tcp_pose()," + this.generateDoubleProbeDirection(this.YDirectionIndex) + ")");
       scriptWriter.appendLine("movej(newPoint,a=" + String.valueOf(RapidAcceleration / 1000) + ",v=" + String.valueOf(RapidSpeed / 1000) + ")");
       scriptWriter.appendLine("sleep(0.5)");
+      scriptWriter.appendLine("zero_ftsensor()");
       scriptWriter.appendLine("starting_pos=get_actual_tcp_pose()");
       scriptWriter.appendLine(this.generateYForceCommand(this.ProbeSpeed / 2));
       scriptWriter.appendLine("while (force()<" + String.valueOf(this.ProbeForce - 1) + " and point_dist(get_actual_tcp_pose(),starting_pos)<0.1):");
@@ -551,26 +574,20 @@ public class ProbeFeatureClass {
     scriptWriter.appendLine(" x0 = (bX - bY) / (mY - mX)");
     scriptWriter.appendLine(" y0 = mY * x0 + bY");
     scriptWriter.appendLine(" z0 = ZProbePoint[2]");
-    scriptWriter.appendLine(" rz = atan(mY/1)");
-    scriptWriter.appendLine(featureName + " = p[x0, y0, z0, 0, 0, rz]");
 
-    double method = 0;
+    scriptWriter.appendLine("v1 = [1,0]");
+    scriptWriter.appendLine("p2 = [Y2ProbePoint[0],Y2ProbePoint[1]]");
+    scriptWriter.appendLine("p1 = [Y1ProbePoint[0],Y1ProbePoint[1]]");
+    scriptWriter.appendLine("Cos = vectorScalar(v1, vectorSub(p2, p1)) / (vectorNorm(v1) * vectorNorm(vectorSub(p2, p1)))");
+    scriptWriter.appendLine("det = vectorCross2D(v1, vectorSub(p2, p1))");
 
-    if (method == 0) {
-      scriptWriter.appendLine("v1 = [1,0]");
-      scriptWriter.appendLine("p2 = [Y2ProbePoint[0],Y2ProbePoint[1]]");
-      scriptWriter.appendLine("p1 = [Y1ProbePoint[0],Y1ProbePoint[1]]");
-      scriptWriter.appendLine("Cos = vectorScalar(v1, vectorSub(p2, p1)) / (vectorNorm(v1) * vectorNorm(vectorSub(p2, p1)))");
-      scriptWriter.appendLine("det = vectorCross2D(v1, vectorSub(p2, p1))");
-
-      scriptWriter.appendLine("if (det > 0):");
-      scriptWriter.appendLine("angle = acos(Cos)");
-      scriptWriter.appendLine("else:");
-      scriptWriter.appendLine("angle = 2 * 3.14159265359 - acos(Cos)");
-      scriptWriter.appendLine("end");
-      scriptWriter.appendLine("angle=angle-d2r(90)");
-      scriptWriter.appendLine(featureName + " = p[x0, y0, z0, 0, 0, angle]");
-    }
+    scriptWriter.appendLine("if (det > 0):");
+    scriptWriter.appendLine("angle = acos(Cos)");
+    scriptWriter.appendLine("else:");
+    scriptWriter.appendLine("angle = 2 * 3.14159265359 - acos(Cos)");
+    scriptWriter.appendLine("end");
+    scriptWriter.appendLine("angle=angle-d2r(90)");
+    scriptWriter.appendLine(featureName + " = p[x0, y0, z0, 0, 0, angle]");
 
     return scriptWriter;
   }

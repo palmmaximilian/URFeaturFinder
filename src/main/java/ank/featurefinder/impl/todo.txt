@@ -1,5 +1,4 @@
 - Move configuration to seperate screen
 
-- Add "move to point" buttons
 
 - See why force mode doesnt work after error

@@ -19,7 +19,7 @@ public class FeatureFinderInstallationNodeView implements SwingInstallationNodeV
   private static final Dimension BUTTON_DIMENSION = new Dimension(190, 30);
   private static final Dimension DIRECTION_DROPDOWN_DIMENSION = new Dimension(110, 30);
   private static final Dimension PROBE_FEATURE_BUTTON_DIMENSION = new Dimension(190, 50);
-  private static final Dimension BUTTONBAR_BUTTON_DIMENSION = new Dimension(90, 40);
+  private static final Dimension BUTTONBAR_BUTTON_DIMENSION = new Dimension(150, 40);
   private static final Dimension SPEED_LABEL_DIMENSION = new Dimension(200, 30);
   private static final Dimension SPEED_TEXTFIELD_DIMENSION = new Dimension(70, 30);
 
@@ -28,10 +28,10 @@ public class FeatureFinderInstallationNodeView implements SwingInstallationNodeV
   private static final Dimension SmallHorizontalRigidArea = new Dimension(10, 0);
   private static final Dimension SmallVerticalRigidArea = new Dimension(0, 10);
 
-  private static final Dimension CoordinateLabelDimension = new Dimension(400, 30);
   private JButton createFeatureButton;
   private JButton deleteFeatureButton;
   public JButton renameFeatureButton;
+  public JButton moveToFeatureButton;
   public JTextField renameTextField = new JTextField(20);
   private Box defaultBox = Box.createHorizontalBox();
   private Box licenseBox = Box.createHorizontalBox();
@@ -59,15 +59,7 @@ public class FeatureFinderInstallationNodeView implements SwingInstallationNodeV
 
   private JButton LicenseSelectionButton = new JButton("Select License File");
 
-  private JLabel ZUpLabel = new JLabel();
-  private JLabel XUpLabel = new JLabel();
-  private JLabel XDownLabel = new JLabel();
-  private JLabel Y1UpLabel = new JLabel();
-  private JLabel Y1DownLabel = new JLabel();
-  private JLabel Y2UpLabel = new JLabel();
-  private JLabel Y2DownLabel = new JLabel();
 
-  // add a textinput
 
   private JLabel RapidSpeedLabel = new JLabel("Rapid Speed (mm/s):");
   private JLabel RapidAccLabel = new JLabel("Rapid Acc. (mm/s^2):");
@@ -331,6 +323,8 @@ public class FeatureFinderInstallationNodeView implements SwingInstallationNodeV
     dropdown.addActionListener(actionListener);
   }
 
+
+
   private Box createPoseBox(final FeatureFinderInstallationNodeContribution contribution) {
     Box outerBox = Box.createHorizontalBox();
     outerBox.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -418,6 +412,8 @@ public class FeatureFinderInstallationNodeView implements SwingInstallationNodeV
     moveToBox.add(Y1DownMoveToButton);
     moveToBox.add(Box.createRigidArea(SmallVerticalRigidArea));
     moveToBox.add(Y2UpMoveToButton);
+    moveToBox.add(Box.createRigidArea(SmallVerticalRigidArea));
+    moveToBox.add(Y2DownMoveToButton);
 
     outerBox.add(moveToBox);
 
@@ -479,12 +475,18 @@ public class FeatureFinderInstallationNodeView implements SwingInstallationNodeV
     renameFeatureButton.setEnabled(false);
     renameFeatureButton.setPreferredSize(BUTTONBAR_BUTTON_DIMENSION);
 
-    buttonBox.add(Box.createRigidArea(new Dimension(55, 0)));
+    moveToFeatureButton= new JButton("Move To");
+    buttonSetUp(moveToFeatureButton,BUTTONBAR_BUTTON_DIMENSION,"moveToFeatureButton",generalActionListener);
+
+
+    buttonBox.add(Box.createRigidArea(SmallHorizontalRigidArea));
     buttonBox.add(createFeatureButton);
-    buttonBox.add(Box.createRigidArea(new Dimension(55, 0)));
+    buttonBox.add(Box.createRigidArea(SmallHorizontalRigidArea));
     buttonBox.add(deleteFeatureButton);
-    buttonBox.add(Box.createRigidArea(new Dimension(55, 0)));
+    buttonBox.add(Box.createRigidArea(SmallHorizontalRigidArea));
     buttonBox.add(renameFeatureButton);
+    // buttonBox.add(Box.createRigidArea(SmallHorizontalRigidArea));
+    // buttonBox.add(moveToFeatureButton);
 
     return buttonBox;
   }
@@ -501,13 +503,6 @@ public class FeatureFinderInstallationNodeView implements SwingInstallationNodeV
     Y2DownButton.setEnabled(true);
     ProbeFeatureButton.setEnabled(true);
 
-    ZUpLabel.setEnabled(true);
-    XUpLabel.setEnabled(true);
-    XDownLabel.setEnabled(true);
-    Y1UpLabel.setEnabled(true);
-    Y1DownLabel.setEnabled(true);
-    Y2UpLabel.setEnabled(true);
-    Y2DownLabel.setEnabled(true);
 
     ZDirectionBox.setEnabled(true);
     XDirectionBox.setEnabled(true);
@@ -544,21 +539,6 @@ public class FeatureFinderInstallationNodeView implements SwingInstallationNodeV
     Y2DownButton.setEnabled(false);
     ProbeFeatureButton.setEnabled(false);
 
-    ZUpLabel.setEnabled(false);
-    XUpLabel.setEnabled(false);
-    XDownLabel.setEnabled(false);
-    Y1UpLabel.setEnabled(false);
-    Y1DownLabel.setEnabled(false);
-    Y2UpLabel.setEnabled(false);
-    Y2DownLabel.setEnabled(false);
-
-    ZUpLabel.setText("p[0.000,0.000,0.000,0.000,0.000,0.000]");
-    XUpLabel.setText("p[0.000,0.000,0.000,0.000,0.000,0.000]");
-    XDownLabel.setText("p[0.000,0.000,0.000,0.000,0.000,0.000]");
-    Y1UpLabel.setText("p[0.000,0.000,0.000,0.000,0.000,0.000]");
-    Y1DownLabel.setText("p[0.000,0.000,0.000,0.000,0.000,0.000]");
-    Y2UpLabel.setText("p[0.000,0.000,0.000,0.000,0.000,0.000]");
-    Y2DownLabel.setText("p[0.000,0.000,0.000,0.000,0.000,0.000]");
 
     ZDirectionBox.setEnabled(false);
     XDirectionBox.setEnabled(false);
@@ -620,21 +600,8 @@ public class FeatureFinderInstallationNodeView implements SwingInstallationNodeV
     featureFrame.setSelectedIndex(index);
   }
 
-  private String shortenPose(String poseString) {
-    // truncate each value to 4 decimal places
-    String[] PoseArray = poseString.split(",");
-    String returnPose = "p" + "[" + String.format("%.3f", Double.parseDouble(PoseArray[0].substring(2))) + "," + String.format("%.3f", Double.parseDouble(PoseArray[1])) + "," + String.format("%.3f", Double.parseDouble(PoseArray[2])) + "," + String.format("%.3f", Double.parseDouble(PoseArray[3])) + "," + String.format("%.3f", Double.parseDouble(PoseArray[4])) + "," + String.format("%.3f", Double.parseDouble(PoseArray[5].substring(0, PoseArray[5].length() - 1))) + "]";
-    return returnPose;
-  }
 
   public void updateProbeFeatureLables(ProbeFeatureClass ProbeFeature) {
-    ZUpLabel.setText(shortenPose(ProbeFeature.getZUpPoseString()));
-    XUpLabel.setText(shortenPose(ProbeFeature.getXUpPoseString()));
-    XDownLabel.setText(shortenPose(ProbeFeature.getXDownPoseString()));
-    Y1UpLabel.setText(shortenPose(ProbeFeature.getY1UpPoseString()));
-    Y1DownLabel.setText(shortenPose(ProbeFeature.getY1DownPoseString()));
-    Y2UpLabel.setText(shortenPose(ProbeFeature.getY2UpPoseString()));
-    Y2DownLabel.setText(shortenPose(ProbeFeature.getY2DownPoseString()));
 
     ZDirectionBox.setSelectedIndex(ProbeFeature.getZDirectionIndex());
     XDirectionBox.setSelectedIndex(ProbeFeature.getXDirectionIndex());
@@ -655,6 +622,14 @@ public class FeatureFinderInstallationNodeView implements SwingInstallationNodeV
     Y1DownButton.setBackground(ProbeFeature.getY1DownPoseString().equals(DefaultVariables.DefaultPose) ? undefinedYellow : null);
     Y2UpButton.setBackground(ProbeFeature.getY2UpPoseString().equals(DefaultVariables.DefaultPose) ? undefinedYellow : null);
     Y2DownButton.setBackground(ProbeFeature.getY2DownPoseString().equals(DefaultVariables.DefaultPose) ? undefinedYellow : null);
+
+    ZUpMoveToButton.setEnabled(ProbeFeature.getZUpPoseString().equals(DefaultVariables.DefaultPose) ? false : true);
+    XUpMoveToButton.setEnabled(ProbeFeature.getXUpPoseString().equals(DefaultVariables.DefaultPose) ? false : true);
+    XDownMoveToButton.setEnabled(ProbeFeature.getXDownPoseString().equals(DefaultVariables.DefaultPose) ? false : true);
+    Y1UpMoveToButton.setEnabled(ProbeFeature.getY1UpPoseString().equals(DefaultVariables.DefaultPose) ? false : true);
+    Y1DownMoveToButton.setEnabled(ProbeFeature.getY1DownPoseString().equals(DefaultVariables.DefaultPose) ? false : true);
+    Y2UpMoveToButton.setEnabled(ProbeFeature.getY2UpPoseString().equals(DefaultVariables.DefaultPose) ? false : true);
+    Y2DownMoveToButton.setEnabled(ProbeFeature.getY2DownPoseString().equals(DefaultVariables.DefaultPose) ? false : true);
 
     ProbeFeatureButton.setEnabled(ProbeFeature.isDefined() ? true : false);
   }

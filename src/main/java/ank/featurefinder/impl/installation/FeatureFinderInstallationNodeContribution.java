@@ -27,6 +27,7 @@ import com.ur.urcap.api.domain.value.PoseFactory;
 import com.ur.urcap.api.domain.value.robotposition.PositionParameters;
 import com.ur.urcap.api.domain.value.simple.Angle;
 import com.ur.urcap.api.domain.value.simple.Length;
+
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
@@ -115,8 +116,21 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     writer.appendLine(" x0 = (bX - bY) / (mY - mX)");
     writer.appendLine(" y0 = mY * x0 + bY");
     writer.appendLine(" z0 = ZProbePoint[2]");
-    writer.appendLine(" rz = atan(mY/1)");
-    writer.appendLine(" return (p[x0, y0, z0, 0, 0, rz])");
+
+    writer.appendLine("v1 = [1,0]");
+    writer.appendLine("p2 = [Y2ProbePoint[0],Y2ProbePoint[1]]");
+    writer.appendLine("p1 = [Y1ProbePoint[0],Y1ProbePoint[1]]");
+    writer.appendLine("Cos = vectorScalar(v1, vectorSub(p2, p1)) / (vectorNorm(v1) * vectorNorm(vectorSub(p2, p1)))");
+    writer.appendLine("det = vectorCross2D(v1, vectorSub(p2, p1))");
+
+    writer.appendLine("if (det > 0):");
+    writer.appendLine("angle = acos(Cos)");
+    writer.appendLine("else:");
+    writer.appendLine("angle = 2 * 3.14159265359 - acos(Cos)");
+    writer.appendLine("end");
+    writer.appendLine("angle=angle-d2r(90)");
+    writer.appendLine("orig = p[x0, y0, z0, 0, 0, angle]");
+    writer.appendLine("return orig");
     writer.appendLine("end");
 
     writer.appendLine("def vectorSub(v1, v2):");
@@ -186,6 +200,8 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
         renameButton();
       } else if (name.equals("deleteButton")) {
         deleteButton();
+      } else if (name.equals("moveToFeatureButton")) {
+        moveRobot(0);
       } else if (name.equals("ZUpButton")) {
         // System.out.println("ZUpButton pressed");
         updatePose(0);
@@ -226,7 +242,6 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
       } else if (name.equals("Y2DownMoveToButton")) {
         moveRobot(7);
       } else if (name.equals("LicenseSelectionButton")) {
-
         // ask user to select a file
         JFileChooser fileChooser = new JFileChooser();
         // Create a file filter for specific file endings (e.g., ".txt" files)
@@ -237,7 +252,7 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
         if (result == JFileChooser.APPROVE_OPTION) {
           File selectedFile = fileChooser.getSelectedFile();
           model.set("LicensePath", selectedFile.getAbsolutePath());
-          if(isLicenseValid()){
+          if (isLicenseValid()) {
             // copy the license file to the current folder
             try {
               // check if file already exists and delete it
@@ -644,6 +659,11 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
 
     double[] poseList = new double[6];
     switch (id) {
+      case 0:
+        String currentFeature = view.getFeatureListValue();
+        Pose currentPose = featureContributionModel.getFeature(currentFeature).getPose();
+        poseList = currentPose.toArray(Length.Unit.M, Angle.Unit.RAD);
+        break;
       case 1:
         poseList = currentProbeFeature.poseStringToList(currentProbeFeature.getZUpPoseString());
         break;
@@ -802,7 +822,6 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
 
     ScriptSender scriptSender = new ScriptSender();
 
-
     double[] v1 = { 1, 0 };
     double p2[] = { Y2ProbePoint[0], Y2ProbePoint[1] };
     double p1[] = { Y1ProbePoint[0], Y1ProbePoint[1] };
@@ -817,7 +836,6 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
     }
     angle = angle - Math.PI / 2;
 
-
     Pose origin = poseFactory.createPose(x0, y0, z0, 0, 0, angle, Length.Unit.M, Angle.Unit.RAD);
 
     scriptSender.sendLogMsg("origin: " + origin.toString());
@@ -829,24 +847,22 @@ public class FeatureFinderInstallationNodeContribution implements InstallationNo
   }
 
   public boolean isLicenseValid() {
-    
-      String licensePath = model.get("LicensePath", "/data/root/.urcaps/FeatureFinderLicense.lic");
+    String licensePath = model.get("LicensePath", "/data/root/.urcaps/FeatureFinderLicense.lic");
 
-      // read text file and save in String license
-      String license = "";
-      try {
-        license = new String(Files.readAllBytes(Paths.get(licensePath)));
+    // read text file and save in String license
+    String license = "";
+    try {
+      license = new String(Files.readAllBytes(Paths.get(licensePath)));
 
-        if (license.equals(getLicenseHash())) {
-          return true;
-        } else {
-          return false;
-        }
-      } catch (IOException e) {
-        System.out.println("Exception: " + e);
+      if (license.equals(getLicenseHash())) {
+        return true;
+      } else {
         return false;
       }
-    
+    } catch (IOException e) {
+      System.out.println("Exception: " + e);
+      return false;
+    }
   }
 
   private String getLicenseHash() {
